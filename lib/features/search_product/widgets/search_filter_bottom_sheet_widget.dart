@@ -29,8 +29,8 @@ class SearchFilterBottomSheet extends StatefulWidget {
 class SearchFilterBottomSheetState extends State<SearchFilterBottomSheet> {
   RangeValues currentRangeValues = const RangeValues(0, 0);
   IndicatorRangeSliderThumbShape indicatorRangeSliderThumbShape = IndicatorRangeSliderThumbShape(start: 0, end: 0);
-  final TextEditingController? _minController = TextEditingController();
-  final TextEditingController? _maxController = TextEditingController();
+  final TextEditingController _minController = TextEditingController();
+  final TextEditingController _maxController = TextEditingController();
   final SearchProductController? searchProductController = Provider.of<SearchProductController>(Get.context!, listen: false);
 
   final _debounce = DebounceHelper(milliseconds: 500);
@@ -130,9 +130,9 @@ class SearchFilterBottomSheetState extends State<SearchFilterBottomSheet> {
                                 double? inputMinPrice =  double.tryParse(val);
 
                                 if(_maxController?.text != '' && inputMinPrice != null && inputMinPrice > double.tryParse(_maxController!.text)!) {
-                                  _minController?.text = minPrice.toString();
+                                  _minController.text = minPrice.toString();
                                 } else if (inputMinPrice! > maxPrice) {
-                                  _minController?.text = '';
+                                  _minController.text = '';
                                   showCustomSnackBarWidget(getTranslated('min_price_should_not_grater', context), context, snackBarType: SnackBarType.error);
                                 } else {
                                   setState(() {
@@ -154,12 +154,12 @@ class SearchFilterBottomSheetState extends State<SearchFilterBottomSheet> {
                                  double? inputMaxPrice =  double.tryParse(val);
 
                                  if(inputMaxPrice != null && inputMaxPrice > (maxPrice ?? 0)) {
-                                   _maxController?.text = maxPrice.toString();
+                                   _maxController.text = maxPrice.toString();
                                  } else {
                                    _debounce.run(
                                       () {
                                         if(inputMaxPrice == null) {
-                                          _maxController!.text = '';
+                                          _maxController.text = '';
                                         } else if((inputMaxPrice) < currentRangeValues.start) {
 
                                         } else {
@@ -240,7 +240,7 @@ class SearchFilterBottomSheetState extends State<SearchFilterBottomSheet> {
                               String selectedBrandId = selectedBrandIdsList.isNotEmpty? jsonEncode(selectedBrandIdsList) : '[]';
                               searchProvider.searchProduct(query : searchProvider.searchController.text.toString(),
                                   offset: 1, brandIds: selectedBrandId, categoryIds: selectedCategoryId, authorIds: selectedAuthorId, publishingIds: selectedPublishingId,
-                                  sort: searchProvider.sortText, priceMin: _minController?.text, priceMax: _maxController?.text);
+                                  sort: searchProvider.sortText, priceMin: _minController.text, priceMax: _maxController.text);
                               Navigator.pop(context);
                             },
                           )),
