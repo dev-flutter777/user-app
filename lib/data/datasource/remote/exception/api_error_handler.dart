@@ -89,6 +89,9 @@ class ApiErrorHandler {
             case DioExceptionType.unknown:
               errorDescription = "Request to API call limit excited ";
               break;
+            case DioExceptionType.transformTimeout:
+              errorDescription = "Transform timeout";
+              break;  
           }
         } else {
           errorDescription = "Unexpected error occured";

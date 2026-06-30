@@ -41,8 +41,8 @@ class SearchFilterBottomSheetState extends State<SearchFilterBottomSheet> {
     indicatorRangeSliderThumbShape = IndicatorRangeSliderThumbShape(start: Provider.of<SearchProductController>(context, listen: false).minFilterValue, end: Provider.of<SearchProductController>(context, listen: false).maxFilterValue,);
 
     if(searchProductController?.minPrice != null && searchProductController?.maxPrice != null) {
-      _minController!.text = searchProductController!.minPrice.toString();
-      _maxController!.text = searchProductController!.maxPrice.toString();
+      _minController.text = searchProductController!.minPrice.toString();
+      _maxController.text = searchProductController!.maxPrice.toString();
     }
 
 
@@ -109,8 +109,8 @@ class SearchFilterBottomSheetState extends State<SearchFilterBottomSheet> {
                                 searchProvider.setFilterValue(values.start, values.end);
                                 setState(() {
                                   currentRangeValues = values;
-                                  _minController?.text = values.start.toString() ;
-                                  _maxController?.text = values.end.toString();
+                                  _minController.text = values.start.toString() ;
+                                  _maxController.text = values.end.toString();
                                 });
                               },
                             ),
@@ -122,14 +122,14 @@ class SearchFilterBottomSheetState extends State<SearchFilterBottomSheet> {
                            Expanded(
                              child: PriceRangeInputField(
                               title: 'min_price',
-                              textEditingController: _minController!,
+                              textEditingController: _minController,
                               hintText:  Provider.of<SearchProductController>(context, listen: false).minFilterValue.toString(),
                               onInputChanged: (String val) {
                                 double? minPrice = Provider.of<SearchProductController>(context, listen: false).minFilterValue;
                                 double? maxPrice = Provider.of<SearchProductController>(context, listen: false).maxFilterValue;
                                 double? inputMinPrice =  double.tryParse(val);
 
-                                if(_maxController?.text != '' && inputMinPrice != null && inputMinPrice > double.tryParse(_maxController!.text)!) {
+                                if(_maxController.text != '' && inputMinPrice != null && inputMinPrice > double.tryParse(_maxController.text)!) {
                                   _minController.text = minPrice.toString();
                                 } else if (inputMinPrice! > maxPrice) {
                                   _minController.text = '';
@@ -147,7 +147,7 @@ class SearchFilterBottomSheetState extends State<SearchFilterBottomSheet> {
                            Expanded(
                              child: PriceRangeInputField(
                                title: 'max_price',
-                               textEditingController: _maxController!,
+                               textEditingController: _maxController,
                                hintText: Provider.of<SearchProductController>(context, listen: false).maxFilterValue.toString(),
                                onInputChanged: (String val) {
                                  double? maxPrice = Provider.of<SplashController>(context, listen: false).configModel?.productMaxUnitPriceRange;
