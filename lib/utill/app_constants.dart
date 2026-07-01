@@ -11,7 +11,7 @@ import 'package:flutter_sixvalley_ecommerce/common/enums/local_caches_type_enum.
   static const int imageQuality = 100;
   static const LocalCachesTypeEnum cachesType = LocalCachesTypeEnum.all;
 
-  static const String baseUrl = 'YOUR_BASE_URL_HERE';
+  static const String baseUrl = 'https://licensed-drug-seeking-pest.trycloudflare.com/ba/public';
 
   static const String googleServerClientId = 'client_id here';
   static const String userId = 'userId';
