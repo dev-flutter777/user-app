@@ -31,7 +31,7 @@ class PaymentMethodBottomSheetWidgetState extends State<PaymentMethodBottomSheet
   @override
   void initState() {
     changeAmountTextController.text = '${Provider.of<CheckoutController>(context, listen: false).cashChangesAmount ?? ''}';
-    if((configModel?.cashOnDelivery ?? false) && !widget.onlyDigital && !checkoutController.isCODChecked) {
+    if((configModel?.cashOnDelivery ?? false) && !widget.onlyDigital && !checkoutController.isCODChecked && false) {
       checkoutController.setOfflineChecked('cod', notify: false);
     }
     super.initState();
@@ -94,7 +94,7 @@ class PaymentMethodBottomSheetWidgetState extends State<PaymentMethodBottomSheet
                           mainAxisSize: MainAxisSize.min, children: [
 
                             Row(children: [
-                              if((configModel?.cashOnDelivery ?? false) && !widget.onlyDigital) Expanded(child: CustomButton(
+                              if((configModel?.cashOnDelivery ?? false) && !widget.onlyDigital && false) Expanded(child: CustomButton(
                                 isBorder: true,
                                 leftIcon: Images.cod,
                                 backgroundColor: checkoutController.isCODChecked? Theme.of(context).primaryColor : Theme.of(context).cardColor,

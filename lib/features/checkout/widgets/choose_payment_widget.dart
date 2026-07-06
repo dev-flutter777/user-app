@@ -61,7 +61,9 @@ class ChoosePaymentWidget extends StatelessWidget {
                   SizedBox(height: 1, child: const Divider(thickness: .200)),
 
                 if(orderProvider.isCODChecked  ||  orderProvider.isOfflineChecked ||  orderProvider.isWalletChecked || (orderProvider.paymentMethodIndex != -1))
-                  Padding(
+                  Visibility(
+                   visible: !orderProvider.isCODChecked,
+                    child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeDefault),
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       SizedBox(height: Dimensions.paddingSizeDefault),
@@ -101,6 +103,7 @@ class ChoosePaymentWidget extends StatelessWidget {
                     ]
                     ),
                   ),
+               ),
                 // : SizedBox(),
 
               ],
