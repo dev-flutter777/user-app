@@ -31,6 +31,8 @@ import 'package:flutter_sixvalley_ecommerce/features/checkout/widgets/shipping_d
 import 'package:flutter_sixvalley_ecommerce/features/checkout/widgets/wallet_payment_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/checkout/screens/activation_invoice_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_sixvalley_ecommerce/features/customer_packages/screens/customer_packages_screen.dart';
+import 'package:flutter_sixvalley_ecommerce/features/customer_packages/screens/offline_payment_screen.dart';
  
 
 
@@ -415,12 +417,27 @@ class CheckoutScreenState extends State<CheckoutScreen> {
       var invoice = Provider.of<CheckoutController>(Get.context!, listen: false).activationInvoice;
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        // خطوة 2: فحص هل توجد فاتورة؟
+        // خطوة 2: فحص هل توجد فاتورة تنشيط للحساب؟
         if (invoice != null) {
-          // إذا وجدت فاتورة، نذهب لشاشة الفاتورة
-          Navigator.pushReplacement(Get.context!, MaterialPageRoute(builder: (_) => ActivationInvoiceScreen(invoiceData: invoice)));
+          // جلب التوكن الحقيقي لليوزر من الـ AuthController
+          String userToken = Provider.of<AuthController>(Get.context!, listen: false).getUserToken();
+
+          // 1. إظهار رسالة فورية للمستخدم تفيد بأن طلبه معلق وقيد المراجعة
+          showCustomSnackBarWidget(
+            'تم استلام طلب المنتجات بنجاح وهو معلق قيد المراجعة. يرجى تفعيل الباقة الآن لتنشيط الحساب.', 
+            Get.context!, 
+            snackBarType: SnackBarType.success,
+          );
+
+          // 2. توجيهه فوراً لصفحة الباقات الجديدة وتمرير التوكن لها
+          Navigator.pushReplacement(
+            Get.context!, 
+            MaterialPageRoute(
+              builder: (_) => CustomerPackagesScreen(userToken: userToken),
+            ),
+          );
         } else {
-          // إذا لم توجد، نكمل المسار الطبيعي
+          // إذا لم توجد فاتورة (المسار الطبيعي القديم للسيستم)
           bool isLoggedIn = Provider.of<AuthController>(Get.context!, listen: false).isLoggedIn();
           String? orderId = Provider.of<CheckoutController>(Get.context!, listen: false).getFirstOrderId(orderID);
 
@@ -455,8 +472,8 @@ class CheckoutScreenState extends State<CheckoutScreen> {
                     ),
                     description: getTranslated('your_order_placed', Get.context!),
                     isFailed: false,
-                  ), // <-- القفلة اللي كانت ناقصة هنا
-                ); // <-- وهنا
+                  ),
+                );
               },
             );
           });
@@ -466,7 +483,4 @@ class CheckoutScreenState extends State<CheckoutScreen> {
       showCustomSnackBarWidget(message, Get.context!, snackBarType: SnackBarType.error);
     }
   }
-
-
-}
-
+ }
