@@ -263,21 +263,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                       ) : const SizedBox.shrink(),
                       const SizedBox(height: Dimensions.paddingSizeSmall),
 
-                      Consumer<SplashController>(
-                        builder: (context, splashController, _) {
-                          final config = splashController.configModel;
-                          final showPromiseWidget = config?.activeTheme == 'default' && config?.companyReliability?.any((item) => item.status == 1) == true;
-
-                          if (showPromiseWidget) {
-                            return Container(
-                              padding: const EdgeInsets.only(top: Dimensions.paddingSizeLarge, bottom: Dimensions.paddingSizeDefault),
-                              decoration: BoxDecoration(color: Theme.of(context).cardColor),
-                              child: const PromiseWidget(),
-                            );
-                          }
-                          return const SizedBox();
-                        },
-                      ),
+                      const SizedBox.shrink(),
 
                       _ProductDetailsProductListWidget(scrollController: scrollController),
 

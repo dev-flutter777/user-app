@@ -142,50 +142,7 @@ class _ShopInfoWidgetState extends State<ShopInfoWidget> {
                         )
                       )),
 
-                      SizedBox(width: Dimensions.paddingSizeExtraSmall),
-
-                      InkWell(
-                        onTap: () {
-                          if(!Provider.of<AuthController>(context, listen: false).isLoggedIn()) {
-                            showModalBottomSheet(context: context, builder: (_) => NotLoggedInBottomSheetWidget(fromPage: RouterHelper.productDetailsScreen));
-                          }else if(seller.sellerInfoModelProductDetails != null && ((seller.sellerInfoModelProductDetails?.seller?.shop?.temporaryClose ?? false))){
-                            showCustomSnackBarWidget(getTranslated('this_shop_is_close_now', context), context, snackBarType: SnackBarType.error);
-                          }
-                          else if(seller.sellerInfoModelProductDetails != null) {
-                            Provider.of<ChatController>(context, listen: false).setUserTypeIndex(context, 1);
-                            if(seller.sellerInfoModelProductDetails?.seller != null){
-                              RouterHelper.getChatScreenRoute(
-                                action: RouteAction.push,
-                                id: seller.sellerInfoModelProductDetails?.seller?.id,
-                                name: seller.sellerInfoModelProductDetails?.seller?.shop?.name ?? '',
-                                userType: 1,
-                                image: seller.sellerInfoModelProductDetails?.seller?.shop?.imageFullUrl?.path ?? '',
-                                isShopOnVacation: isVacationActive,
-                                isShopTemporaryClosed: seller.sellerInfoModelProductDetails?.seller?.shop?.temporaryClose ?? false,
-                              );
-                            }else{
-                              RouterHelper.getChatScreenRoute(
-                                action: RouteAction.push,
-                                id: 0,
-                                name: Provider.of<SplashController>(context, listen: false).configModel?.inHouseShop?.name ?? '',
-                                userType: 1,
-                                image: "${Provider.of<SplashController>(context, listen: false).configModel?.inHouseShop?.imageFullUrl?.path}",
-                                isShopOnVacation: isVacationActive,
-                                isShopTemporaryClosed: Provider.of<SplashController>(context, listen: false).configModel?.inhouseTemporaryClose?.status ?? false,
-                              );
-                            }
-                          }
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(Dimensions.paddingSizeSmall),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).cardColor,
-                            border: Border.all(color: Theme.of(context).hintColor.withValues(alpha: 0.30) ),
-                            borderRadius: BorderRadius.circular(Dimensions.paddingSizeExtraSmall)
-                          ),
-                          child: const CustomAssetImageWidget(Images.storeChatIcon, height: 20, width: 20)
-                        ),
-                      ),
+                      const SizedBox.shrink(),
                     ]),
 
                     const SizedBox(height: Dimensions.paddingSizeExtraSmall),
