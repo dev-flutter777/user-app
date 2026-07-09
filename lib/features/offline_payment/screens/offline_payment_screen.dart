@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter_sixvalley_ecommerce/common/basewidget/custom_button_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/address/controllers/address_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/checkout/controllers/checkout_controller.dart';
@@ -30,6 +32,7 @@ class OfflinePaymentScreen extends StatefulWidget {
 class _OfflinePaymentScreenState extends State<OfflinePaymentScreen> {
    TextEditingController paymentController = TextEditingController();
    final GlobalKey<FormState> offlineFormKey = GlobalKey<FormState>();
+   File? _pickedImage;
 
 
 
@@ -86,31 +89,101 @@ class _OfflinePaymentScreenState extends State<OfflinePaymentScreen> {
                         physics: const NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
                         itemCount: checkoutProvider.offlinePaymentModel!.offlineMethods![checkoutProvider.offlineMethodSelectedIndex].methodInformations?.length,
-                        itemBuilder: (context, index){
-                          MethodInformations? methodInformation = checkoutProvider.offlinePaymentModel!.offlineMethods![checkoutProvider.offlineMethodSelectedIndex].methodInformations?[index];
+                       itemBuilder: (context, index){
+  MethodInformations? methodInformation = checkoutProvider.offlinePaymentModel!.offlineMethods![checkoutProvider.offlineMethodSelectedIndex].methodInformations?[index];
 
-                          return Padding(
-                            padding: const EdgeInsets.only(top: Dimensions.paddingSizeDefault),
-                            child: CustomTextFieldWidget(
-                              controller: checkoutProvider.inputFieldControllerList[index],
-                              required: methodInformation?.isRequired == 1,
-                              labelText: '${methodInformation?.customerInput}'.replaceAll('_', ' ').capitalize(),
-                              hintText: '${methodInformation?.customerPlaceholder}'.replaceAll('_', ' ').capitalize(),
-                              validator: (value) {
-                                if(methodInformation?.isRequired == 1) {
-                                  return ValidateCheck.validateEmptyText(value, '${methodInformation?.customerInput}'.replaceAll('_', ' ').capitalize());
-
-                                }else{
-                                  return null;
-                                }
-                              },
-                            ),
-                          );
-                        }),
+ //من اول الكود
+  if (methodInformation?.inputType == 'image') {
+    return Padding(
+      padding: const EdgeInsets.only(top: Dimensions.paddingSizeDefault),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${methodInformation?.customerInput}'.replaceAll('_', ' ').capitalize() + (methodInformation?.isRequired == 1 ? ' *' : ''),
+            style: textBold.copyWith(fontSize: Dimensions.fontSizeDefault),
+          ),
+          const SizedBox(height: 10),
+          InkWell(
+            onTap: () async {
+              final ImagePicker picker = ImagePicker();
+              final XFile? image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 50);
+              
+              if (image != null) {
+                setState(() {
+                  _pickedImage = File(image.path);
+                });
+                checkoutProvider.inputFieldControllerList[index].text = image.path;
+              }
+            },
+            child: Container(
+              height: 140,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(Dimensions.paddingSizeSmall),
+                border: Border.all(color: Theme.of(context).hintColor.withOpacity(0.5)),
+              ),
+              child: _pickedImage != null 
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(Dimensions.paddingSizeSmall),
+                    child: Image.file(_pickedImage!, fit: BoxFit.cover),
+                  )
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.camera_alt, color: Theme.of(context).hintColor, size: 40),
+                      const SizedBox(height: 8),
+                      Text(
+                        'إرفاق صورة التحويل (Screenshot)',
+                        style: textRegular.copyWith(color: Theme.of(context).hintColor),
+                      ),
+                    ],
                   ),
-                ),
+            ),
+          ),
+          FormField<String>(
+            validator: (value) {
+              if (methodInformation?.isRequired == 1 && checkoutProvider.inputFieldControllerList[index].text.isEmpty) {
+                return 'يرجى إرفاق صورة إثبات التحويل أولاً';
+              }
+              return null;
+            },
+            builder: (FormFieldState<String> state) {
+              return state.hasError 
+                ? Padding(
+                    padding: const EdgeInsets.only(top: 5, left: 5),
+                    child: Text(state.errorText!, style: textRegular.copyWith(color: Colors.red, fontSize: Dimensions.fontSizeSmall)),
+                  )
+                : const SizedBox();
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
-
+  return Padding(
+    padding: const EdgeInsets.only(top: Dimensions.paddingSizeDefault),
+    child: CustomTextFieldWidget(
+      controller: checkoutProvider.inputFieldControllerList[index],
+      required: methodInformation?.isRequired == 1,
+      labelText: '${methodInformation?.customerInput}'.replaceAll('_', ' ').capitalize(),
+      hintText: '${methodInformation?.customerPlaceholder}'.replaceAll('_', ' ').capitalize(),
+      validator: (value) {
+        if(methodInformation?.isRequired == 1) {
+          return ValidateCheck.validateEmptyText(value, '${methodInformation?.customerInput}'.replaceAll('_', ' ').capitalize());
+        }else{
+          return null;
+        }
+      },
+    ),
+ // نهاية الـ CustomTextFieldWidget القديم اللي جوه الـ itemBuilder
+          );
+        }), // <--- قفل الـ ListView.builder
+  ), // <--- قفل الـ RepaintBoundary
+),
+//في مشكلة في السطرين دول لما اجي ابص عليهم
                 const SizedBox(height: 20,),
                 CustomTextFieldWidget(controller: paymentController,
                 labelText:  getTranslated('note', context),

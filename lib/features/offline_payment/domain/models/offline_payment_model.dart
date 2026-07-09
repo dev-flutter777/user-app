@@ -72,14 +72,16 @@ class MethodInformations {
   String? customerInput;
   String? customerPlaceholder;
   int? isRequired;
+  String? inputType;
 
   MethodInformations(
-      {this.customerInput, this.customerPlaceholder, this.isRequired});
+      {this.customerInput, this.customerPlaceholder, this.isRequired, this.inputType});
 
   MethodInformations.fromJson(Map<String, dynamic> json) {
     customerInput = json['customer_input'];
     customerPlaceholder = json['customer_placeholder'];
     isRequired = json['is_required'];
+    inputType = json['input_type'];
   }
 
 }
