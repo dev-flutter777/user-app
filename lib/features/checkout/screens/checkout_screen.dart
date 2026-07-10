@@ -31,7 +31,7 @@ import 'package:flutter_sixvalley_ecommerce/features/checkout/widgets/shipping_d
 import 'package:flutter_sixvalley_ecommerce/features/checkout/widgets/wallet_payment_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_sixvalley_ecommerce/features/customer_packages/screens/customer_packages_screen.dart';
-import 'package:flutter_sixvalley_ecommerce/features/customer_packages/screens/offline_payment_screen.dart';
+import 'package:flutter_sixvalley_ecommerce/features/offline_payment/screens/offline_payment_screen.dart';
  
 
 
@@ -411,32 +411,17 @@ class CheckoutScreenState extends State<CheckoutScreen> {
 
   void _callback(bool isSuccess, String message, String orderID, bool createAccount) async {
     if (isSuccess) {
-      // خطوة 1: استدعاء دالة جلب الفاتورة من الكنترولر
-      await Provider.of<CheckoutController>(Get.context!, listen: false).getActivationInvoiceData();
-      var invoice = Provider.of<CheckoutController>(Get.context!, listen: false).activationInvoice;
+      // 1. جلب التوكن الحقيقي للمستخدم
+      String userToken = Provider.of<AuthController>(Get.context!, listen: false).getUserToken();
+
+      // 2. استدعاء فحص حالة الباقة الفعلي من الكنترولر الجديد
+      await Provider.of<CustomerPackageController>(Get.context!, listen: false).getCurrentActivationInvoice(userToken);
+      var currentInvoice = Provider.of<CustomerPackageController>(Get.context!, listen: false).currentInvoice;
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        // خطوة 2: فحص هل توجد فاتورة تنشيط للحساب؟
-        if (invoice != null) {
-          // جلب التوكن الحقيقي لليوزر من الـ AuthController
-          String userToken = Provider.of<AuthController>(Get.context!, listen: false).getUserToken();
-
-          // 1. إظهار رسالة فورية للمستخدم تفيد بأن طلبه معلق وقيد المراجعة
-          showCustomSnackBarWidget(
-            'تم استلام طلب المنتجات بنجاح وهو معلق قيد المراجعة. يرجى تفعيل الباقة الآن لتنشيط الحساب.', 
-            Get.context!, 
-            snackBarType: SnackBarType.success,
-          );
-
-          // 2. توجيهه فوراً لصفحة الباقات الجديدة وتمرير التوكن لها
-          Navigator.pushReplacement(
-            Get.context!, 
-            MaterialPageRoute(
-              builder: (_) => CustomerPackagesScreen(userToken: userToken),
-            ),
-          );
-        } else {
-          // إذا لم توجد فاتورة (المسار الطبيعي القديم للسيستم)
+        // 3. الفحص الذكي للحالة
+        if (currentInvoice != null && currentInvoice.status == 'active') {
+          // ✅ الحساب نشط ودافع الباقة والتأمين -> كمل مسار النجاح الطبيعي القديم للسيستم
           bool isLoggedIn = Provider.of<AuthController>(Get.context!, listen: false).isLoggedIn();
           String? orderId = Provider.of<CheckoutController>(Get.context!, listen: false).getFirstOrderId(orderID);
 
@@ -476,10 +461,26 @@ class CheckoutScreenState extends State<CheckoutScreen> {
               },
             );
           });
+
+        } else {
+          // ❌ مش مشترك أو دافع ومستني الموافقة (pending/null) -> وقفه ووديه صفحة الباقات فوراً
+          showCustomSnackBarWidget(
+            'تم استلام طلب المنتجات بنجاح. يرجى الاشتراك وتفعيل باقة المشتري لتنشيط حسابك بالكامل وإتمام العملية.', 
+            Get.context!, 
+            snackBarType: SnackBarType.warning,
+          );
+
+          // توجيهه فوراً لشاشة الباقات (وهي هتعرف لوحده تعرض له الباقات ولا شاشة قيد المراجعة)
+          Navigator.pushReplacement(
+            Get.context!, 
+            MaterialPageRoute(
+              builder: (_) => CustomerPackagesScreen(userToken: userToken),
+            ),
+          );
         }
       });
     } else {
       showCustomSnackBarWidget(message, Get.context!, snackBarType: SnackBarType.error);
     }
   }
- }
+}

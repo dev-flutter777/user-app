@@ -12,6 +12,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_sixvalley_ecommerce/common/basewidget/show_custom_snakbar_widget.dart';
 import 'package:provider/provider.dart';
+import 'dart:convert';
 
 
 
@@ -66,17 +67,44 @@ class CheckoutController with ChangeNotifier {
         String? couponCode, String? couponAmount,
         String? billingAddressId, String? orderNote, String? transactionId,
         String? paymentNote, int? id, String? name,bool isfOffline = false, bool wallet = false}) async {
-    for(TextEditingController textEditingController in inputFieldControllerList) {
-      inputValueList.add(textEditingController.text.trim());
+    // --- التعديل الجديد لفصل الصورة وتشفير الحقول النصية ---
+    String imagePath = '';
+    if (isfOffline) {
+      Map<String, String> methodInformations = {};
 
+      // Loop على البيانات لمعرفة نوع كل حقل
+      for (int i = 0; i < offlinePaymentModel!.offlineMethods![offlineMethodSelectedIndex].methodInformations!.length; i++) {
+        var field = offlinePaymentModel!.offlineMethods![offlineMethodSelectedIndex].methodInformations![i];
+
+        if (field.inputType == 'image') {
+          // نأخذ مسار الصورة المخزن في التكست كنترولر
+          imagePath = inputFieldControllerList[i].text.trim();
+        } else {
+          // نجمع الحقول النصية فقط (مثل الاسم والهاتف)
+          methodInformations[field.customerInput ?? ''] = inputFieldControllerList[i].text.trim();
+        }
+      }
+
+      // تشفير الحقول النصية فقط إلى Base64 كما طلب الأدمن
+      String base64EncodedJson = base64Encode(utf8.encode(jsonEncode(methodInformations)));
+
+      // تفريغ الـ الـ inputValueList والـ keyList ل نرسل فيهم القيم الجديدة للسيرفر
+      inputValueList = [base64EncodedJson];
+      keyList = ['method_informations'];
+    } else {
+      // لو دفع عادي مش offline يشتغل الكود القديم طبيعي
+      for(TextEditingController textEditingController in inputFieldControllerList) {
+        inputValueList.add(textEditingController.text.trim());
+      }
     }
+    // ----------------------------------------------------
 
     _isLoading = true;
     _newUser = false;
     notifyListeners();
     ApiResponseModel apiResponse;
     isfOffline?
-    apiResponse = await checkoutServiceInterface.offlinePaymentPlaceOrder(addressID, couponCode, couponAmount, billingAddressId, orderNote, keyList, inputValueList, offlineMethodSelectedId, offlineMethodSelectedName, paymentNote, _isCheckCreateAccount, passwordController.text.trim()):
+    apiResponse = await checkoutServiceInterface.offlinePaymentPlaceOrder(addressID, couponCode, couponAmount, billingAddressId, orderNote, keyList, inputValueList, offlineMethodSelectedId, offlineMethodSelectedName, paymentNote, _isCheckCreateAccount, passwordController.text.trim(), imagePath): // <-- أضفنا imagePath هنا
     wallet?
     apiResponse = await checkoutServiceInterface.walletPaymentPlaceOrder(addressID, couponCode, couponAmount, billingAddressId, orderNote, _isCheckCreateAccount, passwordController.text.trim()):
 

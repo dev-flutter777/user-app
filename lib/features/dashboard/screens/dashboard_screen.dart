@@ -15,6 +15,7 @@ import 'package:flutter_sixvalley_ecommerce/main.dart';
 import 'package:flutter_sixvalley_ecommerce/utill/dimensions.dart';
 import 'package:flutter_sixvalley_ecommerce/features/dashboard/widgets/app_exit_card_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/chat/screens/inbox_screen.dart';
+import 'package:flutter_sixvalley_ecommerce/features/customer_packages/screens/customer_packages_screen.dart';
 import 'package:flutter_sixvalley_ecommerce/utill/images.dart';
 import 'package:flutter_sixvalley_ecommerce/features/home/screens/aster_theme_home_screen.dart';
 import 'package:flutter_sixvalley_ecommerce/features/home/screens/fashion_theme_home_screen.dart';
@@ -82,7 +83,13 @@ class DashBoardScreenState extends State<DashBoardScreen> {
             ? const AsterThemeHomeScreen(): const HomePage(),
         ),
 
-        NavigationModel(name: 'inbox', icon: Images.messageImage, screen: InboxScreen(fromDashboard: true)),
+        NavigationModel(
+        name: 'inbox', 
+        icon: Images.messageImage, 
+        screen: CustomerPackagesScreen(
+        userToken: Provider.of<AuthController>(context, listen: false).getUserToken(), // 👈 مررنا التوكن هنا بشكل آمن
+       ),
+      ),
         NavigationModel(name: 'cart', icon: Images.cartArrowDownImage, screen: const CartScreen(showBackButton: false, fromDashboard: true), showCartIcon: true),
         NavigationModel(name: 'orders', icon: Images.shoppingImage, screen:  const OrderScreen(isBacButtonExist: false, fromDashboard: true)),
         NavigationModel(name: 'more', icon: Images.moreImage, screen:  const MoreScreen()),

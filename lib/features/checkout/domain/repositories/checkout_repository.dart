@@ -69,34 +69,45 @@ Future<dynamic> getActivationInvoice() async {
   }
 }
 
-  @override
-  Future<ApiResponseModel> offlinePaymentPlaceOrder(String? addressID, String? couponCode, String? couponDiscountAmount, String? billingAddressId, String? orderNote, List <String?> typeKey, List<String> typeValue, int? id, String name, String? paymentNote, bool? isCheckCreateAccount, String? password) async {
+ @override
+  Future<ApiResponseModel> offlinePaymentPlaceOrder(String? addressID, String? couponCode, String? couponDiscountAmount, String? billingAddressId, String? orderNote, List <String?> typeKey, List<String> typeValue, int? id, String name, String? paymentNote, bool? isCheckCreateAccount, String? password, String? imagePath) async {
     try {
-      Map<String?, String> fields = {};
-      Map<String?, String> info = {};
-      for(var i = 0; i < typeKey.length; i++){
-        info.addAll(<String?, String>{
-          typeKey[i] : typeValue[i]
-        });
-      }
-
       int isCheckAccount = isCheckCreateAccount! ? 1: 0;
-      fields.addAll(<String, String>{
-        "method_informations" : base64.encode(utf8.encode(jsonEncode(info))),
+
+      // 1. تجهيز كافة الحقول الأصلية الخاصة بالسيستم داخل Map عادي
+      Map<String, dynamic> fields = {
+        // نأخذ القيمة المشفرة Base64 الجاهزة القادمة من الـ Controller مباشرة
+        "method_informations" : typeValue.isNotEmpty ? typeValue[0] : '',
         'method_name': name,
         'method_id': id.toString(),
-        'payment_note' : paymentNote??'',
-        'address_id': addressID??'',
-        'coupon_code' : couponCode??"",
-        'coupon_discount' : couponDiscountAmount??'',
-        'billing_address_id' : billingAddressId??'',
-        'order_note' : orderNote??'',
-        'guest_id': Provider.of<AuthController>(Get.context!, listen: false).getGuestToken()??'',
-        'is_guest' : Provider.of<AuthController>(Get.context!, listen: false).isLoggedIn()? '0':'1',
+        'payment_note' : paymentNote ?? '',
+        'address_id': addressID ?? '',
+        'coupon_code' : couponCode ?? "",
+        'coupon_discount' : couponDiscountAmount ?? '',
+        'billing_address_id' : billingAddressId ?? '',
+        'order_note' : orderNote ?? '',
+        'guest_id': Provider.of<AuthController>(Get.context!, listen: false).getGuestToken() ?? '',
+        'is_guest' : Provider.of<AuthController>(Get.context!, listen: false).isLoggedIn() ? '0' : '1',
         'is_check_create_account' : isCheckAccount.toString(),
         'password' : password ?? '',
-      });
-      Response response = await dioClient!.post(AppConstants.offlinePayment, data: fields);
+      };
+
+      // 2. تحويل الـ Map إلى FormData لدعم بروتوكول الـ Multipart (رفع الصور)
+      FormData formData = FormData.fromMap(fields);
+
+      // 3. إذا قام المستخدم بالتقاط صورة، نقوم بإرفاقها كملف حقيقي في حقل payment_proof كما طلب الأدمن
+      if (imagePath != null && imagePath.isNotEmpty) {
+        formData.files.add(MapEntry(
+          'payment_proof', // الكي المطلوب والمدعوم في خادم الأدمن لاستقبال الصورة
+          await MultipartFile.fromFile(
+            imagePath,
+            filename: 'payment_screenshot.jpg',
+          ),
+        ));
+      }
+
+      // 4. إرسال الـ formData عبر الـ POST request بدلاً من الـ fields العادية
+      Response response = await dioClient!.post(AppConstants.offlinePayment, data: formData);
       return ApiResponseModel.withSuccess(response);
     } catch (e) {
       return ApiResponseModel.withError(ApiErrorHandler.getMessage(e));
