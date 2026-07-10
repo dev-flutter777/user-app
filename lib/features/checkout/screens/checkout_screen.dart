@@ -29,7 +29,6 @@ import 'package:flutter_sixvalley_ecommerce/features/checkout/widgets/choose_pay
 import 'package:flutter_sixvalley_ecommerce/features/checkout/widgets/coupon_apply_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/checkout/widgets/shipping_details_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/checkout/widgets/wallet_payment_widget.dart';
-import 'package:flutter_sixvalley_ecommerce/features/checkout/screens/activation_invoice_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_sixvalley_ecommerce/features/customer_packages/screens/customer_packages_screen.dart';
 import 'package:flutter_sixvalley_ecommerce/features/customer_packages/screens/offline_payment_screen.dart';
