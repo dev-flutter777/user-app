@@ -32,6 +32,7 @@ import 'package:flutter_sixvalley_ecommerce/features/checkout/widgets/wallet_pay
 import 'package:provider/provider.dart';
 import 'package:flutter_sixvalley_ecommerce/features/customer_packages/screens/customer_packages_screen.dart';
 import 'package:flutter_sixvalley_ecommerce/features/offline_payment/screens/offline_payment_screen.dart';
+import 'package:flutter_sixvalley_ecommerce/features/customer_packages/controllers/customer_package_controller.dart';
  
 
 

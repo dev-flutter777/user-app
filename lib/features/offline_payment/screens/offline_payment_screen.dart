@@ -24,7 +24,18 @@ import 'package:image_picker/image_picker.dart';
 class OfflinePaymentScreen extends StatefulWidget {
   final double payableAmount;
   final Function callback;
-  const OfflinePaymentScreen({super.key, required this.payableAmount, required this.callback});
+  
+  // 🟢 المتغيرات الجديدة اللي استقبلناها عشان الباقة
+  final String paymentType; 
+  final int? activationInvoiceId;
+
+  const OfflinePaymentScreen({
+    super.key, 
+    required this.payableAmount, 
+    required this.callback,
+    this.paymentType = 'order', // افتراضي أوردر منتجات عشان السلة متضربش
+    this.activationInvoiceId,
+  });
 
   @override
   State<OfflinePaymentScreen> createState() => _OfflinePaymentScreenState();
@@ -232,6 +243,8 @@ class _OfflinePaymentScreenState extends State<OfflinePaymentScreen> {
                                 couponCode: couponCode,
                                 couponAmount: couponCodeAmount,
                                 isfOffline: true,
+                                paymentType: widget.paymentType,
+                                activationInvoiceId: widget.activationInvoiceId,
                               );
                             }
                           },

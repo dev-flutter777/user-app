@@ -42,6 +42,7 @@ class ActivationInvoiceModel {
   double? totalAmount;
   String? paymentStatus;
   String? status;
+  String? message; // ✅ تم إضافة حقل الـ message هنا لحل مشكلة الـ Getter الخاطئ في شاشة الباقات
   PackageInfo? package;
   InsuranceInfo? insurance;
 
@@ -51,6 +52,7 @@ class ActivationInvoiceModel {
     this.totalAmount,
     this.paymentStatus,
     this.status,
+    this.message,
     this.package,
     this.insurance,
   });
@@ -61,6 +63,7 @@ class ActivationInvoiceModel {
     totalAmount = double.tryParse(json['total_amount'].toString());
     paymentStatus = json['payment_status'];
     status = json['status'];
+    message = json['message'] ?? json['status_message']; // ✅ جلب الرسالة القادمة من السيرفر
     package = json['package'] != null ? PackageInfo.fromJson(json['package']) : null;
     insurance = json['insurance'] != null ? InsuranceInfo.fromJson(json['insurance']) : null;
   }
@@ -95,6 +98,7 @@ class InsuranceInfo {
 
 // ==================== 2. CONTROLLER ====================
 
+// ✅ الكلاس يرث ChangeNotifier ومجهّز بالكامل ليعمل كـ Type Argument في الـ Provider بدون أخطاء
 class CustomerPackageController extends ChangeNotifier {
   // اكتب هنا الدومين بتاع موقعك الأساسي
   final String baseUrl = "https://yourdomain.com"; 

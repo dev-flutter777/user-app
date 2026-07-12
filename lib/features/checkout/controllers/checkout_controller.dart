@@ -63,41 +63,83 @@ class CheckoutController with ChangeNotifier {
 
 
 
-  Future<void> placeOrder({required Function callback, String? addressID,
-        String? couponCode, String? couponAmount,
-        String? billingAddressId, String? orderNote, String? transactionId,
-        String? paymentNote, int? id, String? name,bool isfOffline = false, bool wallet = false}) async {
-    // --- التعديل الجديد لفصل الصورة وتشفير الحقول النصية ---
+  Future<void> placeOrder({
+    required Function callback, 
+    String? addressID,
+    String? couponCode, 
+    String? couponAmount,
+    String? billingAddressId, 
+    String? orderNote, 
+    String? transactionId,
+    String? paymentNote, 
+    int? id, 
+    String? name,
+    bool isfOffline = false, 
+    bool wallet = false,
+    String paymentType = 'order', // 🟢 تحديد نوع العملية
+    int? activationInvoiceId,    // 🟢 معرف فاتورة التفعيل
+  }) async {
+
+    // 🟢 1. فصل لوجيك الباقة والتأمين المدمجين في أول الدالة فوراً لتجنب أي تعارض في المتغيرات
+    if (isfOffline && paymentType == 'package') {
+      _isLoading = true;
+      notifyListeners();
+
+      String packageImagePath = '';
+      Map<String, String> packageMethodInformations = {};
+
+      // تجميع الحقول الخاصة بالباقة من الكنترولرز الحالية
+      for (int i = 0; i < offlinePaymentModel!.offlineMethods![offlineMethodSelectedIndex].methodInformations!.length; i++) {
+        var field = offlinePaymentModel!.offlineMethods![offlineMethodSelectedIndex].methodInformations![i];
+        if (field.inputType == 'image') {
+          packageImagePath = inputFieldControllerList[i].text.trim();
+        } else {
+          packageMethodInformations[field.customerInput ?? ''] = inputFieldControllerList[i].text.trim();
+        }
+      }
+
+      // تشفير الحقول النصية للباقة
+      String packageBase64Info = base64Encode(utf8.encode(jsonEncode(packageMethodInformations)));
+
+      // تجهيز الـ Body المتوافق مع السيرفر
+      Map<String, dynamic> offlinePackageData = {
+        "activation_invoice_id": activationInvoiceId,
+        "method_id": offlineMethodSelectedId,
+        "method_informations": packageBase64Info,
+        "payment_note": paymentNote ?? '',
+        "payment_screenshot": packageImagePath
+      };
+      
+      // إرسال البيانات فوراً وإنهاء الدالة
+      await submitInvoicePayment(Get.context!, isOffline: true, offlineData: offlinePackageData);
+      _isLoading = false;
+      notifyListeners();
+      return; // الـ return هنا بتحميك من النزول للوجيك المنتجات تحت
+    }
+
     String imagePath = '';
     if (isfOffline) {
       Map<String, String> methodInformations = {};
 
-      // Loop على البيانات لمعرفة نوع كل حقل
       for (int i = 0; i < offlinePaymentModel!.offlineMethods![offlineMethodSelectedIndex].methodInformations!.length; i++) {
         var field = offlinePaymentModel!.offlineMethods![offlineMethodSelectedIndex].methodInformations![i];
 
         if (field.inputType == 'image') {
-          // نأخذ مسار الصورة المخزن في التكست كنترولر
           imagePath = inputFieldControllerList[i].text.trim();
         } else {
-          // نجمع الحقول النصية فقط (مثل الاسم والهاتف)
           methodInformations[field.customerInput ?? ''] = inputFieldControllerList[i].text.trim();
         }
       }
 
-      // تشفير الحقول النصية فقط إلى Base64 كما طلب الأدمن
       String base64EncodedJson = base64Encode(utf8.encode(jsonEncode(methodInformations)));
 
-      // تفريغ الـ الـ inputValueList والـ keyList ل نرسل فيهم القيم الجديدة للسيرفر
       inputValueList = [base64EncodedJson];
       keyList = ['method_informations'];
     } else {
-      // لو دفع عادي مش offline يشتغل الكود القديم طبيعي
       for(TextEditingController textEditingController in inputFieldControllerList) {
         inputValueList.add(textEditingController.text.trim());
       }
     }
-    // ----------------------------------------------------
 
     _isLoading = true;
     _newUser = false;
