@@ -414,7 +414,7 @@ class CheckoutScreenState extends State<CheckoutScreen> {
     if (isSuccess) {
       // إظهار التنبيه المطلوب فقط عند إرسال الطلب بنجاح، وعدم القيام بأي إجراء آخر
       showCustomSnackBarWidget(
-        'طلبك اتبعت بنجاح لكنه معلق اتجه لصفحة الباقات للاشترك في الباقه', 
+        'تم ارسال الطلب لكنه معلق توجه الي صفحة الباقات لتفعيل الباقه', 
         Get.context!, 
         snackBarType: SnackBarType.success,
       );
