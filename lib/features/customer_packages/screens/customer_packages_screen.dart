@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_sixvalley_ecommerce/utill/app_constants.dart'; 
 import 'package:flutter_sixvalley_ecommerce/features/customer_packages/controllers/customer_package_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/offline_payment/screens/offline_payment_screen.dart'; 
+import 'package:flutter_sixvalley_ecommerce/features/customer_packages/model/customer_package_model.dart'; 
 
 class CustomerPackagesScreen extends StatefulWidget {
   final String? userToken; 
