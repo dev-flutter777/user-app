@@ -23,7 +23,7 @@ class _CustomerPackagesScreenState extends State<CustomerPackagesScreen> {
   bool _isLoading = false;
   bool _isLoggedIn = false;
 
-  // تعريف ألوان التصميم الفخم (Figma Premium Palette)
+  // تعريف ألوان التصميم
   final Color _primaryColor = const Color(0xFF0D53FC); 
   final Color _backgroundColor = const Color(0xFF0B0D17);
   final Color _cardColor = const Color(0xFF141729);

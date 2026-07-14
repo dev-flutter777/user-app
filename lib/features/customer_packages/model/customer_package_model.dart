@@ -4,7 +4,7 @@ class CustomerPackageModel {
   double? price;
   int? durationInDays;
   String? description;
-  double? purchaseLimit; // تم تغييرها إلى purchaseLimit لتتوافق مع السيرفر وقاعدة البيانات
+  double? purchaseLimit;
   List<String>? advantages;
 
   CustomerPackageModel({
