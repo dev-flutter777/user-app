@@ -1,108 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
-// ==================== 1. MODELS ====================
-
-class CustomerPackageModel {
-  int? id;
-  String? name;
-  double? price;
-  int? durationInDays;
-  String? description;
-  int? orderLimit;
-  List<String>? advantages;
-
-  CustomerPackageModel({
-    this.id,
-    this.name,
-    this.price,
-    this.durationInDays,
-    this.description,
-    this.orderLimit,
-    this.advantages,
-  });
-
-  CustomerPackageModel.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    name = json['name'];
-    price = double.tryParse(json['price'].toString());
-    durationInDays = json['duration_in_days'];
-    description = json['description'];
-    orderLimit = json['order_limit'];
-    if (json['advantages'] != null) {
-      advantages = List<String>.from(json['advantages']);
-    }
-  }
-}
-
-class ActivationInvoiceModel {
-  int? id;
-  String? invoiceNo;
-  double? totalAmount;
-  String? paymentStatus;
-  String? status;
-  String? message; // ✅ تم إضافة حقل الـ message هنا لحل مشكلة الـ Getter الخاطئ في شاشة الباقات
-  PackageInfo? package;
-  InsuranceInfo? insurance;
-
-  ActivationInvoiceModel({
-    this.id,
-    this.invoiceNo,
-    this.totalAmount,
-    this.paymentStatus,
-    this.status,
-    this.message,
-    this.package,
-    this.insurance,
-  });
-
-  ActivationInvoiceModel.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    invoiceNo = json['invoice_no'];
-    totalAmount = double.tryParse(json['total_amount'].toString());
-    paymentStatus = json['payment_status'];
-    status = json['status'];
-    message = json['message'] ?? json['status_message']; // ✅ جلب الرسالة القادمة من السيرفر
-    package = json['package'] != null ? PackageInfo.fromJson(json['package']) : null;
-    insurance = json['insurance'] != null ? InsuranceInfo.fromJson(json['insurance']) : null;
-  }
-}
-
-class PackageInfo {
-  int? id;
-  String? name;
-  double? price;
-  double? purchaseLimit;
-
-  PackageInfo({this.id, this.name, this.price, this.purchaseLimit});
-
-  PackageInfo.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    name = json['name'];
-    price = double.tryParse(json['price'].toString());
-    purchaseLimit = double.tryParse(json['purchase_limit'].toString());
-  }
-}
-
-class InsuranceInfo {
-  double? amount;
-
-  InsuranceInfo({this.amount});
-
-  InsuranceInfo.fromJson(Map<String, dynamic> json) {
-    amount = double.tryParse(json['amount'].toString());
-  }
-}
+import 'package:flutter_sixvalley_ecommerce/utill/app_constants.dart';
+import 'package:flutter_sixvalley_ecommerce/features/customer_packages/model/customer_package_model.dart'; 
 
 
-// ==================== 2. CONTROLLER ====================
-
-// ✅ الكلاس يرث ChangeNotifier ومجهّز بالكامل ليعمل كـ Type Argument في الـ Provider بدون أخطاء
 class CustomerPackageController extends ChangeNotifier {
-  // اكتب هنا الدومين بتاع موقعك الأساسي
-  final String baseUrl = "https://yourdomain.com"; 
-
   List<CustomerPackageModel> packageList = [];
   ActivationInvoiceModel? currentInvoice;
   bool isLoading = false;
@@ -111,25 +14,25 @@ class CustomerPackageController extends ChangeNotifier {
     return {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
+      'Accept': 'application/json',
     };
   }
 
-  // 1. جلب الباقات الحقيقية من الأدمن بانل
+  // 1. جلب الباقات الحقيقية المتاحة للشراء
   Future<void> getPackageList(String token) async {
     isLoading = true;
     notifyListeners();
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/api/v1/customer/purchase-packages'),
+        Uri.parse('${AppConstants.baseUrl}/api/v1/customer/purchase-packages'),
         headers: _getHeaders(token),
       );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['packages'] != null) {
-          packageList = [];
-          for (var package in data['packages']) {
-            packageList.add(CustomerPackageModel.fromJson(package));
-          }
+          packageList = (data['packages'] as List)
+              .map((p) => CustomerPackageModel.fromJson(p))
+              .toList();
         }
       }
     } catch (e) {
@@ -145,7 +48,7 @@ class CustomerPackageController extends ChangeNotifier {
     notifyListeners();
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/api/v1/customer/purchase-packages/purchase'),
+        Uri.parse('${AppConstants.baseUrl}/api/v1/customer/purchase-packages/purchase'),
         headers: _getHeaders(token),
         body: jsonEncode({
           'package_id': packageId,
@@ -163,11 +66,13 @@ class CustomerPackageController extends ChangeNotifier {
     }
   }
 
-  // 3. جلب فاتورة التنشيط الحالية المدمج بها التأمين المعرف في الأدمن
+  // 3. جلب فاتورة التنشيط الحالية المدمج بها التأمين والمعلومات المحدثة
   Future<void> getCurrentActivationInvoice(String token) async {
+    isLoading = true;
+    notifyListeners();
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/api/v1/customer/purchase-packages/current'),
+        Uri.parse('${AppConstants.baseUrl}/api/v1/customer/activation-invoice/current'),
         headers: _getHeaders(token),
       );
       if (response.statusCode == 200) {
@@ -178,13 +83,14 @@ class CustomerPackageController extends ChangeNotifier {
           currentInvoice = null;
         }
       }
-      notifyListeners();
     } catch (e) {
       debugPrint("Error fetching invoice: $e");
     }
+    isLoading = false;
+    notifyListeners();
   }
 
-  // 4. إرسال الدفع الأوفلاين النصي المشفر base64 لتسمع في الأدمن بانل كـ pending_offline_review
+  // 4. إرسال الدفع الأوفلاين المشفر base64 لتبدأ الإدارة في مراجعته يدوياً
   Future<bool> submitOfflinePayment({
     required int invoiceId,
     required int methodId,
@@ -199,7 +105,7 @@ class CustomerPackageController extends ChangeNotifier {
 
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/api/v1/customer/purchase-packages/pay-by-offline-payment'),
+        Uri.parse('${AppConstants.baseUrl}/api/v1/customer/activation-invoice/pay-by-offline-payment'),
         headers: _getHeaders(token),
         body: jsonEncode({
           'activation_invoice_id': invoiceId,
