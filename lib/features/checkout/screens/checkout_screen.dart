@@ -412,74 +412,12 @@ class CheckoutScreenState extends State<CheckoutScreen> {
 
   void _callback(bool isSuccess, String message, String orderID, bool createAccount) async {
     if (isSuccess) {
-      // 1. جلب التوكن الحقيقي للمستخدم
-      String userToken = Provider.of<AuthController>(Get.context!, listen: false).getUserToken();
-
-      // 2. استدعاء فحص حالة الباقة الفعلي من الكنترولر الجديد
-      await Provider.of<CustomerPackageController>(Get.context!, listen: false).getCurrentActivationInvoice(userToken);
-      var currentInvoice = Provider.of<CustomerPackageController>(Get.context!, listen: false).currentInvoice;
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        // 3. الفحص الذكي للحالة
-        if (currentInvoice != null && currentInvoice.status == 'active') {
-          // ✅ الحساب نشط ودافع الباقة والتأمين -> كمل مسار النجاح الطبيعي القديم للسيستم
-          bool isLoggedIn = Provider.of<AuthController>(Get.context!, listen: false).isLoggedIn();
-          String? orderId = Provider.of<CheckoutController>(Get.context!, listen: false).getFirstOrderId(orderID);
-
-          if (isLoggedIn && orderId != null) {
-            RouterHelper.getOrderScreenRoute(isBackButtonExist: true, action: RouteAction.push, fromPlaceOrder: true);
-          } else {
-            RouterHelper.getDashboardRoute(action: RouteAction.pushReplacement, page: 'home');
-          }
-
-          Future.delayed(const Duration(milliseconds: 300), () {
-            showModalBottomSheet(
-              isDismissible: false,
-              enableDrag: false,
-              context: Get.context!,
-              isScrollControlled: true,
-              backgroundColor: Colors.transparent,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-              ),
-              builder: (context) {
-                return Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                  ),
-                  child: OrderPlaceBottomSheetWidget(
-                    orderID: orderID,
-                    icon: Icons.check,
-                    title: getTranslated(
-                      createAccount ? 'order_placed_Account_Created' : 'order_placed',
-                      Get.context!,
-                    ),
-                    description: getTranslated('your_order_placed', Get.context!),
-                    isFailed: false,
-                  ),
-                );
-              },
-            );
-          });
-
-        } else {
-          // ❌ مش مشترك أو دافع ومستني الموافقة (pending/null) -> وقفه ووديه صفحة الباقات فوراً
-          showCustomSnackBarWidget(
-            'تم استلام طلب المنتجات بنجاح. يرجى الاشتراك وتفعيل باقة المشتري لتنشيط حسابك بالكامل وإتمام العملية.', 
-            Get.context!, 
-            snackBarType: SnackBarType.warning,
-          );
-
-          // توجيهه فوراً لشاشة الباقات (وهي هتعرف لوحده تعرض له الباقات ولا شاشة قيد المراجعة)
-          Navigator.pushReplacement(
-            Get.context!, 
-            MaterialPageRoute(
-              builder: (_) => CustomerPackagesScreen(userToken: userToken),
-            ),
-          );
-        }
-      });
+      // إظهار التنبيه المطلوب فقط عند إرسال الطلب بنجاح، وعدم القيام بأي إجراء آخر
+      showCustomSnackBarWidget(
+        'طلبك اتبعت بنجاح لكنه معلق اتجه لصفحة الباقات للاشترك في الباقه', 
+        Get.context!, 
+        snackBarType: SnackBarType.success,
+      );
     } else {
       showCustomSnackBarWidget(message, Get.context!, snackBarType: SnackBarType.error);
     }
