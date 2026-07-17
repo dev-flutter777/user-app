@@ -47,7 +47,6 @@ import 'package:flutter_sixvalley_ecommerce/features/notification/screens/notifi
 import 'package:flutter_sixvalley_ecommerce/features/more/screens/html_screen_view.dart';
 import 'package:flutter_sixvalley_ecommerce/features/order_details/screens/guest_track_order_screen.dart';
 import 'package:flutter_sixvalley_ecommerce/features/shop/domain/enums/vacation_duration_type.dart';
-import 'package:flutter_sixvalley_ecommerce/features/shop/screens/all_shop_screen.dart';
 import 'package:flutter_sixvalley_ecommerce/features/shop/screens/overview_screen.dart';
 import 'package:flutter_sixvalley_ecommerce/features/splash/controllers/splash_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/splash/domain/models/business_pages_model.dart';
@@ -71,7 +70,6 @@ import 'package:flutter_sixvalley_ecommerce/features/profile/screens/profile_scr
 import 'package:flutter_sixvalley_ecommerce/features/blog/screens/blog_screen.dart';
 import 'package:flutter_sixvalley_ecommerce/features/product/screens/brand_and_category_product_screen.dart';
 import 'package:flutter_sixvalley_ecommerce/features/product_details/screens/product_details_screen.dart';
-import 'package:flutter_sixvalley_ecommerce/features/shop/screens/shop_screen.dart';
 import 'package:flutter_sixvalley_ecommerce/features/onboarding/screens/onboarding_screen.dart';
 import 'package:flutter_sixvalley_ecommerce/features/auth/screens/auth_screen.dart';
 import 'package:flutter_sixvalley_ecommerce/features/auth/screens/forget_password_screen.dart';
@@ -955,10 +953,7 @@ class RouterHelper {
 
       GoRoute(
         path: vendorDetails,
-        builder: (context, state) {
-          final slug = state.pathParameters['slug'] ?? '';
-          return TopSellerProductScreen(slug: slug, vacationEndDate: null, vacationStartDate: null, vacationDurationType: null,);
-        },
+        redirect: (context, state) => dashboardScreen,
       ),
       
       GoRoute(path: splashScreen, builder: (context, state) => const SplashScreen()),
@@ -1051,31 +1046,7 @@ return AddNewAddressScreen(
 
       GoRoute(
         path: topSellerScreen,
-        builder: (context, state) {
-          final qp = state.uri.queryParameters;
-          return TopSellerProductScreen(
-            sellerId: int.tryParse(qp['sellerId'] ?? ''),
-            slug: qp['slug'] ?? '',
-            temporaryClose: qp['temporaryClose'] == 'true',
-            vacationStatus: qp['vacationStatus'] == 'true',
-            vacationEndDate: qp['vacationEndDate'] != null ? DateTime.tryParse(qp['vacationEndDate'] ?? '') : null,
-            vacationStartDate: qp['vacationStartDate'] != null ? DateTime.tryParse(qp['vacationStartDate'] ?? '') : null,
-            vacationDurationType: qp['vacationDurationType'] != null
-              ? VacationDurationType.values.firstWhere(
-                (v) => v.name == qp['vacationDurationType'] || // direct match
-                  'VacationDurationType.${v.name}' == qp['vacationDurationType'] || // prefixed match
-                  v.toString() == qp['vacationDurationType'], // fallback (for safety)
-              orElse: () => VacationDurationType.custom,
-            ) : null,
-            name: qp['name'] != null ? Uri.decodeComponent(qp['name'] ?? '') : null,
-            banner: qp['banner'] != null ? Uri.decodeComponent(qp['banner'] ?? '') : null,
-            image: qp['image'] != null ? Uri.decodeComponent(qp['image'] ?? '') : null,
-            fromMore: qp['fromMore'] == 'true',
-            totalReview: int.tryParse(qp['totalReview'] ?? ''),
-            totalProduct: int.tryParse(qp['totalProduct'] ?? ''),
-            rating: qp['rating'],
-          );
-        },
+        redirect: (context, state) => dashboardScreen,
       ),
 
       GoRoute(path: onboardingScreen, builder: (context, state) {
@@ -1482,12 +1453,7 @@ return AddNewAddressScreen(
 
       GoRoute(
         path: allTopSellerScreen,
-        builder: (context, state) {
-          final title = state.uri.queryParameters['title'] != null
-            ? Uri.decodeComponent(state.uri.queryParameters['title']!)
-            : '';
-          return AllTopSellerScreen(title: title);
-        },
+        redirect: (context, state) => dashboardScreen,
       ),
 
       GoRoute(

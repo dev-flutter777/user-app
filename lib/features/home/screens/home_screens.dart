@@ -29,11 +29,8 @@ import 'package:flutter_sixvalley_ecommerce/features/product/widgets/home_catego
 import 'package:flutter_sixvalley_ecommerce/features/product/widgets/latest_product_list_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/product/widgets/recommended_product_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/profile/controllers/profile_contrroller.dart';
-import 'package:flutter_sixvalley_ecommerce/features/shop/controllers/shop_controller.dart';
-import 'package:flutter_sixvalley_ecommerce/features/home/widgets/top_seller_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/splash/controllers/splash_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/splash/domain/models/config_model.dart';
-import 'package:flutter_sixvalley_ecommerce/helper/responsive_helper.dart';
 import 'package:flutter_sixvalley_ecommerce/helper/route_healper.dart';
 import 'package:flutter_sixvalley_ecommerce/localization/language_constrants.dart';
 import 'package:flutter_sixvalley_ecommerce/main.dart';
@@ -51,7 +48,6 @@ class HomePage extends StatefulWidget {
 
   static Future<void> loadData(bool reload) async {
     final flashDealController = Provider.of<FlashDealController>(Get.context!, listen: false);
-    final shopController = Provider.of<ShopController>(Get.context!, listen: false);
     final categoryController = Provider.of<CategoryController>(Get.context!, listen: false);
     final bannerController = Provider.of<BannerController>(Get.context!, listen: false);
     final addressController = Provider.of<AddressController>(Get.context!, listen: false);
@@ -73,8 +69,6 @@ class HomePage extends StatefulWidget {
 
     bannerController.getBannerList();
 
-    shopController.getAllSellerList(offset: 1, isUpdate: reload);
-    shopController.getTopSellerList(offset: 1, isUpdate: reload);
 
     addressController.getAddressList();
 
@@ -121,15 +115,6 @@ class _HomePageState extends State<HomePage> {
     index = index;
     title = title;
   }
-
-  bool singleVendor = false;
-  @override
-  void initState() {
-    super.initState();
-
-    singleVendor = Provider.of<SplashController>(context, listen: false).configModel?.businessMode == "single";
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -283,38 +268,6 @@ class _HomePageState extends State<HomePage> {
             SliverToBoxAdapter(
               child: const FeaturedProductWidget(),
             ),
-            SliverToBoxAdapter(child: SizedBox(height: Dimensions.paddingSizeDefault)),
-
-            if(!singleVendor)
-            SliverToBoxAdapter(
-              child: Container(
-                padding: EdgeInsets.only(top: Dimensions.paddingSizeSmall),
-                color: Theme.of(context).cardColor,
-                child: Column(
-                  children: [
-                    Consumer<ShopController>(
-                        builder: (context, topSellerProvider, child) {
-                          return (topSellerProvider.topSellerModel != null && (topSellerProvider.topSellerModel!.sellers!=null && topSellerProvider.topSellerModel!.sellers!.isNotEmpty))?
-                          TitleRowWidget(title: getTranslated('top_seller', context),
-                              onTap: ()=> RouterHelper.getAllTopSellerRoute(action: RouteAction.push, title: 'top_seller')) :
-                          const SizedBox();
-                        }),
-                    singleVendor ? const SizedBox(height: 0):const SizedBox(height: Dimensions.paddingSizeSmall),
-
-                    singleVendor ? const SizedBox() :
-                    Consumer<ShopController>(
-                        builder: (context, topSellerProvider, child) {
-                          return (topSellerProvider.topSellerModel != null && (topSellerProvider.topSellerModel!.sellers!=null && topSellerProvider.topSellerModel!.sellers!.isNotEmpty))?
-                          Padding(padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeDefault),
-                              child: SizedBox(height: ResponsiveHelper.isTab(context)? 170 : 150, child: const TopSellerWidget())):const SizedBox();}
-
-                    )
-                  ],
-                ),
-              ),
-            ),
-
-            if(!singleVendor)
             SliverToBoxAdapter(child: SizedBox(height: Dimensions.paddingSizeDefault)),
 
             SliverToBoxAdapter(

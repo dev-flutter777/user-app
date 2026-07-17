@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sixvalley_ecommerce/common/basewidget/no_internet_screen_widget.dart' show NoInternetOrDataScreenWidget;
 import 'package:flutter_sixvalley_ecommerce/features/deal/controllers/flash_deal_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/product/controllers/product_controller.dart';
-import 'package:flutter_sixvalley_ecommerce/features/product/controllers/seller_product_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/product_details/controllers/product_details_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/product_details/widgets/bottom_cart_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/product_details/widgets/product_image_widget.dart';
@@ -11,14 +10,12 @@ import 'package:flutter_sixvalley_ecommerce/features/product_details/widgets/pro
 import 'package:flutter_sixvalley_ecommerce/features/product_details/widgets/promise_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/product_details/widgets/related_product_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/product_details/widgets/review_and_specification_widget.dart';
-import 'package:flutter_sixvalley_ecommerce/features/product_details/widgets/shop_info_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/product_details/widgets/youtube_video_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/review/controllers/review_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/common/basewidget/custom_app_bar_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/home/shimmers/product_details_shimmer.dart';
 import 'package:flutter_sixvalley_ecommerce/features/review/widgets/review_section.dart';
 import 'package:flutter_sixvalley_ecommerce/features/shop/controllers/shop_controller.dart';
-import 'package:flutter_sixvalley_ecommerce/features/shop/widgets/shop_more_product_view_list.dart';
 import 'package:flutter_sixvalley_ecommerce/features/splash/controllers/splash_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/helper/product_helper.dart';
 import 'package:flutter_sixvalley_ecommerce/helper/route_healper.dart';
@@ -257,14 +254,6 @@ class _ProductDetailsState extends State<ProductDetails> {
                       ) : const SizedBox(),
 
 
-                      (details.productDetailsModel != null) ?
-                      ShopInfoWidget(sellerId: details.productDetailsModel!.addedBy == 'seller'? details.productDetailsModel!.seller!.shop!.slug!.toString()
-                        : Provider.of<SplashController>(context, listen: false).configModel!.inHouseShop!.slug!
-                      ) : const SizedBox.shrink(),
-                      const SizedBox(height: Dimensions.paddingSizeSmall),
-
-                      const SizedBox.shrink(),
-
                       _ProductDetailsProductListWidget(scrollController: scrollController),
 
 
@@ -312,56 +301,6 @@ class _ProductDetailsProductListWidget extends StatelessWidget {
               child: RelatedProductWidget(),
             ),
 
-
-            Consumer<SellerProductController>(
-              builder: (context, sellerProductController, _) {
-                return (sellerProductController.sellerMoreProduct != null && sellerProductController.sellerMoreProduct!.products != null &&
-                    sellerProductController.sellerMoreProduct!.products!.isNotEmpty)?
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical : Dimensions.paddingSizeDefault),
-                  child: TitleRowWidget(title: getTranslated('more_from_the_shop', context),
-                    onTap: () {
-                      if(productDetailsController.productDetailsModel?.addedBy == 'seller') {
-                        RouterHelper.getTopSellerRoute(
-                          action: RouteAction.push,
-                          slug: productDetailsController.productDetailsModel?.seller?.shop?.slug,
-                          sellerId: productDetailsController.productDetailsModel?.seller?.id,
-                          temporaryClose: productDetailsController.productDetailsModel?.seller?.shop?.temporaryClose,
-                          vacationStatus: productDetailsController.productDetailsModel?.seller?.shop?.vacationStatus ?? false,
-                          vacationEndDate: productDetailsController.productDetailsModel?.seller?.shop?.vacationEndDate,
-                          vacationStartDate: productDetailsController.productDetailsModel?.seller?.shop?.vacationStartDate,
-                          vacationDurationType: productDetailsController.productDetailsModel?.seller?.shop!.vacationDurationType,
-                          name: productDetailsController.productDetailsModel?.seller?.shop?.name,
-                          banner: productDetailsController.productDetailsModel?.seller?.shop?.bannerFullUrl?.path,
-                          image: productDetailsController.productDetailsModel?.seller?.shop?.imageFullUrl?.path,
-                          fromMore: true,
-                        );
-                      } else {
-                        RouterHelper.getTopSellerRoute(
-                          sellerId: 0,
-                          fromMore: true,
-                          slug: Provider.of<SplashController>(context, listen: false).configModel?.inHouseShop?.slug,
-                          temporaryClose: Provider.of<SplashController>(context, listen: false).configModel?.inhouseTemporaryClose?.status ?? false,
-                          vacationStatus: Provider.of<SplashController>(context, listen: false).configModel?.inhouseVacationAdd?.status,
-                          vacationEndDate: Provider.of<SplashController>(context, listen: false).configModel?.inhouseVacationAdd?.vacationEndDate,
-                          vacationStartDate: Provider.of<SplashController>(context, listen: false).configModel?.inhouseVacationAdd?.vacationStartDate,
-                          vacationDurationType: Provider.of<SplashController>(context, listen: false).configModel?.inhouseVacationAdd?.vacationDurationType,
-                          name: Provider.of<SplashController>(context, listen: false).configModel?.inHouseShop?.name,
-                          banner: Provider.of<SplashController>(context, listen: false).configModel?.inHouseShop?.bannerFullUrl?.path,
-                          image: Provider.of<SplashController>(context, listen: false).configModel?.inHouseShop?.imageFullUrl?.path
-                        );
-                      }
-                    },
-
-                  ),
-                ) : const SizedBox();
-              }
-            ),
-
-            Padding(padding: const EdgeInsets.symmetric(horizontal : Dimensions.paddingSizeSmall),
-              child: ShopMoreProductViewList(
-              scrollController: scrollController, sellerId: productDetailsController.productDetailsModel!.userId!)
-            ),
 
 
 

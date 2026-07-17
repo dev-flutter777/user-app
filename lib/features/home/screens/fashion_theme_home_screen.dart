@@ -16,27 +16,19 @@ import 'package:flutter_sixvalley_ecommerce/features/deal/widgets/flash_deals_li
 import 'package:flutter_sixvalley_ecommerce/features/home/shimmers/flash_deal_shimmer.dart';
 import 'package:flutter_sixvalley_ecommerce/features/home/widgets/announcement_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/home/widgets/aster_theme/find_what_you_need_shimmer.dart';
-import 'package:flutter_sixvalley_ecommerce/features/home/widgets/aster_theme/more_store_list_view_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/home/widgets/fashion_theme/most_demanded_product_widget.dart';
-import 'package:flutter_sixvalley_ecommerce/features/home/widgets/fashion_theme/shop_again_from_your_recent_store_list_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/home/widgets/featured_product_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/home/widgets/just_for_you/just_for_you_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/home/widgets/product_list_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/home/widgets/search_home_page_widget.dart';
-import 'package:flutter_sixvalley_ecommerce/features/home/widgets/shop_again_from_recent_store_list_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/notification/controllers/notification_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/product/controllers/product_controller.dart';
-import 'package:flutter_sixvalley_ecommerce/features/product/controllers/seller_product_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/product/enums/product_type.dart';
 import 'package:flutter_sixvalley_ecommerce/features/product/widgets/latest_product_list_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/product/widgets/most_searching_product_list_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/product/widgets/recommended_product_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/profile/controllers/profile_contrroller.dart';
-import 'package:flutter_sixvalley_ecommerce/features/shop/controllers/shop_controller.dart';
-import 'package:flutter_sixvalley_ecommerce/features/shop/widgets/more_store_list_view.dart';
-import 'package:flutter_sixvalley_ecommerce/features/home/widgets/top_seller_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/splash/controllers/splash_controller.dart';
-import 'package:flutter_sixvalley_ecommerce/helper/responsive_helper.dart';
 import 'package:flutter_sixvalley_ecommerce/helper/route_healper.dart';
 import 'package:flutter_sixvalley_ecommerce/localization/language_constrants.dart';
 import 'package:flutter_sixvalley_ecommerce/main.dart';
@@ -55,7 +47,6 @@ class FashionThemeHomePage extends StatefulWidget {
 
   static Future<void> loadData(bool reload) async {
     final flashDealController = Provider.of<FlashDealController>(Get.context!, listen: false);
-    final shopController = Provider.of<ShopController>(Get.context!, listen: false);
     final categoryController = Provider.of<CategoryController>(Get.context!, listen: false);
     final bannerController = Provider.of<BannerController>(Get.context!, listen: false);
     final productController = Provider.of<ProductController>(Get.context!, listen: false);
@@ -64,13 +55,10 @@ class FashionThemeHomePage extends StatefulWidget {
     final notificationController = Provider.of<NotificationController>(Get.context!, listen: false);
     final cartController = Provider.of<CartController>(Get.context!, listen: false);
     final profileController = Provider.of<ProfileController>(Get.context!, listen: false);
-    final sellerProductController = Provider.of<SellerProductController>(Get.context!, listen: false);
     final splashController = Provider.of<SplashController>(Get.context!, listen: false);
 
     splashController.initConfig(Get.context!, null, null);
 
-    shopController.getAllSellerList(offset: 1, isUpdate: reload);
-    shopController.getTopSellerList(offset: 1, isUpdate: reload);
     if(flashDealController.flashDealList.isEmpty || reload) {
       // await flashDealController.getFlashDealList(reload, false);
     }
@@ -103,8 +91,6 @@ class FashionThemeHomePage extends StatefulWidget {
 
     productController.getClearanceAllProductList(1, isUpdate: reload);
 
-    shopController.getMoreStore();
-
     if(notificationController.notificationModel == null ||
         (notificationController.notificationModel != null &&
           notificationController.notificationModel!.notification!.isEmpty)
@@ -116,8 +102,6 @@ class FashionThemeHomePage extends StatefulWidget {
       if(profileController.userInfoModel == null) {
         await profileController.getUserInfo(Get.context!);
       }
-
-      sellerProductController.getShopAgainFromRecentStore();
 
     }
   }
@@ -134,14 +118,6 @@ class _FashionThemeHomePageState extends State<FashionThemeHomePage> {
     ProductType.discountedProduct,
   ];
 
-
-
-  bool singleVendor = false;
-  @override
-  void initState() {
-    super.initState();
-    singleVendor = Provider.of<SplashController>(context, listen: false).configModel?.businessMode == "single";
-  }
 
 
   @override
@@ -270,18 +246,6 @@ class _FashionThemeHomePageState extends State<FashionThemeHomePage> {
 
 
 
-                singleVendor ? const SizedBox() : Consumer<ShopController>(
-                    builder: (context, topStoreProvider,_) {
-                      return (topStoreProvider.topSellerModel != null && (topStoreProvider.topSellerModel!.sellers!=null && topStoreProvider.topSellerModel!.sellers!.isNotEmpty))?
-                      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        TitleRowWidget(title: getTranslated('top_fashion_house', context),
-                            onTap: ()=> RouterHelper.getAllTopSellerRoute(action: RouteAction.push, title: 'top_fashion_house')),
-                        singleVendor ? const SizedBox(height: 0):const SizedBox(height: Dimensions.paddingSizeSmall),
-                        singleVendor?const SizedBox():
-                        SizedBox(height: ResponsiveHelper.isTab(context)? 170 : 165, child:  const TopSellerWidget())]):
-                      const SizedBox();}),
-
-
                 Consumer<BannerController>(builder: (context, bannerProvider, child){
                   return bannerProvider.promoBannerLeft != null ? Padding(
                     padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeDefault, vertical: Dimensions.paddingSizeDefault),
@@ -348,21 +312,6 @@ class _FashionThemeHomePageState extends State<FashionThemeHomePage> {
 
 
 
-                if(Provider.of<AuthController>(Get.context!, listen: false).isLoggedIn())
-                  Consumer<SellerProductController>(
-                      builder: (context, shopAgainProvider,_) {
-                        return shopAgainProvider.shopAgainFromRecentStoreList.isNotEmpty?
-                        Column(children: [
-                          TitleRowWidget(
-                            title: getTranslated('shop_again_from_recent_store', context),
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_)=> const ShopAgainFromRecentStoreListWidget())),
-                          ),
-                          const SizedBox(height: Dimensions.paddingSizeSmall),
-                          const SizedBox(height: 160, child: ShopAgainFromYourRecentStore()),
-
-                          const SizedBox(height: Dimensions.paddingSizeDefault)]):const SizedBox();}),
-
-
                 Consumer<BannerController>(builder: (context, bannerProvider, child){
                   return bannerProvider.promoBannerRight != null?
                   Padding(padding: const EdgeInsets.only(bottom: Dimensions.homePagePadding,
@@ -376,21 +325,6 @@ class _FashionThemeHomePageState extends State<FashionThemeHomePage> {
                   Padding(padding: const EdgeInsets.only(bottom: Dimensions.homePagePadding ),
                       child: SingleBannersWidget(noRadius: true, bannerModel : bannerProvider.promoBannerBottom,
                           height: MediaQuery.of(context).size.width / 10)):const SizedBox();}),
-
-
-
-
-                Consumer<ShopController>(
-                    builder: (context, moreSellerProvider, _) {
-                      return moreSellerProvider.moreStoreList.isNotEmpty?
-                      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Padding(padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeExtraSmall),
-                          child: TitleRowWidget(title: getTranslated('other_store', context),
-                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) =>
-                              const MoreStoreViewListView()))),),
-                        const SizedBox(height: Dimensions.paddingSizeSmall),
-                        SizedBox(height: ResponsiveHelper.isTab(context)? 170 : 100, child: const MoreStoreView(isHome: true,)),
-                      ],):const SizedBox();}),
 
 
 

@@ -16,11 +16,9 @@ import 'package:flutter_sixvalley_ecommerce/features/deal/widgets/featured_deal_
 import 'package:flutter_sixvalley_ecommerce/features/deal/widgets/flash_deals_list_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/home/shimmers/flash_deal_shimmer.dart';
 import 'package:flutter_sixvalley_ecommerce/features/home/shimmers/order_again_shimmer.dart';
-import 'package:flutter_sixvalley_ecommerce/features/home/shimmers/top_store_shimmer.dart';
 import 'package:flutter_sixvalley_ecommerce/features/home/widgets/announcement_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/home/widgets/aster_theme/find_what_you_need_shimmer.dart';
 import 'package:flutter_sixvalley_ecommerce/features/home/widgets/aster_theme/find_what_you_need_widget.dart';
-import 'package:flutter_sixvalley_ecommerce/features/home/widgets/aster_theme/more_store_list_view_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/home/widgets/aster_theme/order_again_list_view_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/home/widgets/featured_product_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/home/widgets/just_for_you/just_for_you_widget.dart';
@@ -30,16 +28,12 @@ import 'package:flutter_sixvalley_ecommerce/features/home/widgets/search_home_pa
 import 'package:flutter_sixvalley_ecommerce/features/notification/controllers/notification_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/order/controllers/order_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/product/controllers/product_controller.dart';
-import 'package:flutter_sixvalley_ecommerce/features/product/controllers/seller_product_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/product/domain/models/product_model.dart';
 import 'package:flutter_sixvalley_ecommerce/features/product/enums/product_type.dart';
 import 'package:flutter_sixvalley_ecommerce/features/product/widgets/home_category_product_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/product/widgets/latest_product_list_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/product/widgets/recommended_product_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/profile/controllers/profile_contrroller.dart';
-import 'package:flutter_sixvalley_ecommerce/features/shop/controllers/shop_controller.dart';
-import 'package:flutter_sixvalley_ecommerce/features/shop/widgets/more_store_list_view.dart';
-import 'package:flutter_sixvalley_ecommerce/features/home/widgets/top_seller_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/splash/controllers/splash_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/helper/responsive_helper.dart';
 import 'package:flutter_sixvalley_ecommerce/helper/route_healper.dart';
@@ -59,7 +53,6 @@ class AsterThemeHomeScreen extends StatefulWidget {
   State<AsterThemeHomeScreen> createState() => _AsterThemeHomeScreenState();
 
   static Future<void> loadData(bool reload) async {
-    final shopController = Provider.of<ShopController>(Get.context!, listen: false);
     final categoryController = Provider.of<CategoryController>(Get.context!, listen: false);
     final bannerController = Provider.of<BannerController>(Get.context!, listen: false);
     final productController = Provider.of<ProductController>(Get.context!, listen: false);
@@ -68,13 +61,10 @@ class AsterThemeHomeScreen extends StatefulWidget {
     final notificationController = Provider.of<NotificationController>(Get.context!, listen: false);
     final cartController = Provider.of<CartController>(Get.context!, listen: false);
     final profileController = Provider.of<ProfileController>(Get.context!, listen: false);
-    final sellerProductController = Provider.of<SellerProductController>(Get.context!, listen: false);
     final orderController = Provider.of<OrderController>(Get.context!, listen: false);
     final splashController = Provider.of<SplashController>(Get.context!, listen: false);
 
     splashController.initConfig(Get.context!, null, null);
-
-    shopController.getAllSellerList(offset: 1, isUpdate: reload);
 
     cartController.getCartData(Get.context!);
 
@@ -84,7 +74,6 @@ class AsterThemeHomeScreen extends StatefulWidget {
 
     productController.getHomeCategoryProductList(reload);
 
-    shopController.getTopSellerList(offset: 1, isUpdate: reload);
 
     brandController.getBrandList(offset: 1, isUpdate: reload);
 
@@ -104,8 +93,6 @@ class AsterThemeHomeScreen extends StatefulWidget {
 
     productController.getJustForYouProduct(1, isUpdate: reload);
 
-    shopController.getMoreStore();
-
     productController.getClearanceAllProductList(1, isUpdate: reload);
 
     if(notificationController.notificationModel == null ||
@@ -120,8 +107,6 @@ class AsterThemeHomeScreen extends StatefulWidget {
         profileController.getUserInfo(Get.context!);
       }
 
-
-      sellerProductController.getShopAgainFromRecentStore();
 
 
       if(orderController.orderModel == null || (orderController.orderModel != null && orderController.orderModel!.orders!.isEmpty) || reload) {
@@ -140,16 +125,6 @@ class _AsterThemeHomeScreenState extends State<AsterThemeHomeScreen> {
     index = index;
     title = title;
   }
-
-  bool singleVendor = false;
-  @override
-  void initState() {
-    super.initState();
-
-    singleVendor = Provider.of<SplashController>(context, listen: false).configModel?.businessMode == "single";
-
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -278,27 +253,6 @@ class _AsterThemeHomeScreenState extends State<AsterThemeHomeScreen> {
           SliverToBoxAdapter(child: SizedBox(height: Dimensions.paddingSizeDefault)),
 
 
-          if(!singleVendor)
-          SliverToBoxAdapter(
-            child: Consumer<ShopController>(
-              builder: (context, shopController,_) {
-                return shopController.topSellerModel != null? (shopController.topSellerModel!.sellers!=null && shopController.topSellerModel!.sellers!.isNotEmpty) ?
-                Column(children: [
-                  TitleRowWidget(title: getTranslated('top_stores', context),
-                      onTap: ()=> RouterHelper.getAllTopSellerRoute(action: RouteAction.push, title: 'top_stores')
-                  ),
-
-                  const SizedBox(height: Dimensions.paddingSizeSmall),
-
-                  SizedBox(height: ResponsiveHelper.isTab(context)? 180 : 165, child: const TopSellerWidget()),
-                  const SizedBox(height: Dimensions.paddingSizeDefault),
-
-                ]): const SizedBox(): const TopStoreShimmer();
-              }
-            ),
-          ),
-
-
             SliverToBoxAdapter(
               child: Consumer<FeaturedDealController>(
                 builder: (context, featuredDealProvider, child) {
@@ -407,25 +361,6 @@ class _AsterThemeHomeScreenState extends State<AsterThemeHomeScreen> {
                 ) : const SizedBox();
               },
             ),
-          ),
-          SliverToBoxAdapter(child: const SizedBox(height: Dimensions.paddingSizeDefault)),
-
-
-          SliverToBoxAdapter(
-            child: Consumer<ShopController>(
-              builder: (context, moreStoreProvider, _) {
-                return moreStoreProvider.moreStoreList.isNotEmpty ?
-                Column(children: [
-                  TitleRowWidget(
-                    title: getTranslated('more_store', context),
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => MoreStoreViewListView(title: getTranslated('more_store', context)))),
-                  ),
-                  const SizedBox(height: Dimensions.paddingSizeSmall),
-
-                  const MoreStoreView(isHome: true),
-                  const SizedBox(height: Dimensions.paddingSizeDefault),
-                ]):const SizedBox();
-              }),
           ),
           SliverToBoxAdapter(child: const SizedBox(height: Dimensions.paddingSizeDefault)),
 
