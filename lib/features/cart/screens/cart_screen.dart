@@ -48,9 +48,6 @@ class CartScreenState extends State<CartScreen> {
   Future<void> _loadData() async {
     await Provider.of<CartController>(Get.context!, listen: false).getCartData(Get.context!);
      Provider.of<CartController>(Get.context!, listen: false).setCartData();
-      if( Provider.of<SplashController>(Get.context!,listen: false).configModel!.shippingMethod != 'sellerwise_shipping') {
-        Provider.of<ShippingController>(Get.context!, listen: false).getAdminShippingMethodList(Get.context!);
-      }
   }
 
   Color _currentColor = Theme.of(Get.context!).cardColor; // Initial color
@@ -175,16 +172,9 @@ class CartScreenState extends State<CartScreen> {
 
               double freeDeliveryAmountDiscount = 0;
               for (var seller in sellerGroupList) {
-                if(seller.freeDeliveryOrderAmount?.status == 1 && seller.isGroupItemChecked!){
-                  freeDeliveryAmountDiscount += seller.freeDeliveryOrderAmount!.shippingCostSaved!;
-                }
                 if(seller.shippingType == 'order_wise'){
                   orderTypeShipping.add(seller.shippingType);
                 }
-              }
-
-              if(cart.getData && configProvider.configModel!.shippingMethod == 'sellerwise_shipping') {
-                shippingController.getShippingMethod(context, cartProductList);
               }
 
               for(int i=0; i<cart.cartList.length; i++) {
@@ -197,19 +187,6 @@ class CartScreenState extends State<CartScreen> {
                   }
                 }
               }
-              for(int i=0; i<shippingController.chosenShippingList.length; i++){
-                if(shippingController.chosenShippingList[i].isCheckItemExist == 1 && !onlyDigital) {
-                  shippingAmount += shippingController.chosenShippingList[i].shippingCost!;
-                }
-              }
-
-
-              for(int j = 0; j< cartList.length; j++) {
-                if(cartList[j].isChecked!) {
-                  shippingAmount += cart.cartList[j].shippingCost ?? 0;
-                }
-              }
-
               sellerKeys.clear();
               for (int i = 0; i < sellerList.length; i++) {
                 sellerKeys.add(GlobalKey());
@@ -378,7 +355,7 @@ class CartScreenState extends State<CartScreen> {
                                     showCustomSnackBarWidget(getTranslated('unavailable_shop_product_in_your_cart', context), Get.context!, snackBarType: SnackBarType.warning);
                                   } else if(minimum) {
                                     showCustomSnackBarWidget(
-                                        '${getTranslated('minimum_order_amount', Get.context!)} ${PriceConverter.convertPrice(Get.context!, requiredMinOrderAmountCart?.sellerCart.minimumOrderAmountInfo)} ${getTranslated('for', Get.context!)}  ${requiredMinOrderAmountCart?.sellerCart.sellerIs == 'admin' ? Provider.of<SplashController>(context, listen: false).configModel?.inHouseShop?.name : requiredShippingCartModel?.sellerCart.shop?.name}',
+                                        '${getTranslated('minimum_order_amount', Get.context!)} ${PriceConverter.convertPrice(Get.context!, requiredMinOrderAmountCart?.sellerCart.minimumOrderAmountInfo)}',
                                         Get.context!, snackBarType: SnackBarType.warning
                                     );
                                     _scrollToSeller(requiredMinOrderAmountCart?.sellerIndex);
@@ -391,15 +368,15 @@ class CartScreenState extends State<CartScreen> {
                                     _scrollToSeller(requiredMinOrderQtyCart.sellerIndex);
                                     await Future.delayed(const Duration(milliseconds: 900));
                                     changeColor();
-                                  } else if(hasNull && configProvider.configModel!.shippingMethod == 'sellerwise_shipping' && !onlyDigital) {
+                                  } else if(false && hasNull && configProvider.configModel!.shippingMethod == 'sellerwise_shipping' && !onlyDigital) {
                                     showCustomSnackBarWidget(
-                                        '${getTranslated('select_all_shipping_method', context)} ${getTranslated('for', Get.context!)} ${requiredShippingCartModel?.sellerCart.sellerIs == 'admin' ? Provider.of<SplashController>(context, listen: false).configModel?.inHouseShop?.name : requiredShippingCartModel?.sellerCart.shop?.name}',
+                                        '${getTranslated('select_all_shipping_method', context)}',
                                         Get.context!, snackBarType: SnackBarType.warning);
 
                                     _scrollToSeller(requiredShippingCartModel?.sellerIndex);
                                     await Future.delayed(const Duration(milliseconds: 900));
                                     changeColor();
-                                  } else if(shippingController.chosenShippingList.isEmpty &&
+                                  } else if(false && shippingController.chosenShippingList.isEmpty &&
                                       configProvider.configModel!.shippingMethod !='sellerwise_shipping' &&
                                       configProvider.configModel!.inhouseSelectedShippingType =='order_wise' && !onlyDigital) {
                                     showCustomSnackBarWidget(getTranslated('select_shipping_method', context), Get.context!, snackBarType: SnackBarType.warning);
@@ -579,8 +556,7 @@ class CartScreenState extends State<CartScreen> {
                                                           ),
 
                                                           Flexible(child: InkWell(
-                                                            onTap: () => _storeScreenRouteCall(sellerGroupList[index]),
-                                                            child: Text(sellerGroupList[index].shopInfo!, maxLines: 1, overflow: TextOverflow.ellipsis,
+                                                            child: Text(getTranslated('products', context) ?? '', maxLines: 1, overflow: TextOverflow.ellipsis,
                                                               textAlign: TextAlign.start, style: textBold.copyWith(fontWeight: FontWeight.w500, fontSize: Dimensions.fontSizeLarge,
                                                                 color: Provider.of<ThemeController>(context, listen: false).darkTheme?
                                                                 Theme.of(context).hintColor : Theme.of(context).textTheme.bodyLarge?.color)
@@ -618,7 +594,7 @@ class CartScreenState extends State<CartScreen> {
                                                   )
                                                 ),
 
-                                                configProvider.configModel!.shippingMethod =='sellerwise_shipping' &&
+                                                false && configProvider.configModel!.shippingMethod =='sellerwise_shipping' &&
                                                     sellerGroupList[index].shippingType == 'order_wise' && hasPhysical ?
                                                 SizedBox(width: 180,
                                                   child: configProvider.configModel!.shippingMethod =='sellerwise_shipping' &&
@@ -672,7 +648,7 @@ class CartScreenState extends State<CartScreen> {
 
 
 
-                                          if((sellerGroupList[index].minimumOrderAmountInfo!> totalCost) || (configProvider.configModel!.shippingMethod == 'sellerwise_shipping' && sellerGroupList[index].shippingType == 'order_wise' && hasPhysical))
+                                          if((sellerGroupList[index].minimumOrderAmountInfo!> totalCost) || (false && configProvider.configModel!.shippingMethod == 'sellerwise_shipping' && sellerGroupList[index].shippingType == 'order_wise' && hasPhysical))
                                             Padding(
                                               padding: EdgeInsets.only(
                                                   left: Dimensions.paddingSizeDefault,

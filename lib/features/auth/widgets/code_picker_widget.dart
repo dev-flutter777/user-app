@@ -162,12 +162,12 @@ class CodePickerWidgetState extends State<CodePickerWidget> {
     Widget internalWidget;
     if (widget.builder != null) {
       internalWidget = InkWell(
-        onTap: showCodePickerWidgetDialog,
+        onTap: null,
         child: widget.builder!(selectedItem),
       );
     } else {
       internalWidget = InkWell(
-        onTap: widget.enabled ? showCodePickerWidgetDialog : null,
+        onTap: null,
         child: Padding(
           padding: widget.padding,
           child: Flex(
@@ -224,6 +224,7 @@ class CodePickerWidgetState extends State<CodePickerWidget> {
     super.didChangeDependencies();
 
     elements = elements.map((element) => element.localize(context)).toList();
+    selectedItem = _egyptCode();
     _onInit(selectedItem);
   }
 
@@ -232,18 +233,7 @@ class CodePickerWidgetState extends State<CodePickerWidget> {
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.initialSelection != widget.initialSelection) {
-      if (widget.initialSelection != null) {
-        selectedItem = elements.firstWhere((criteria) =>
-            (criteria.code!.toUpperCase() ==
-                widget.initialSelection!.toUpperCase()) ||
-                (criteria.dialCode == widget.initialSelection) ||
-                (criteria.name!.toUpperCase() ==
-                    widget.initialSelection!.toUpperCase()),
-            orElse: () => elements[0],
-        );
-      } else {
-        selectedItem = elements[0];
-      }
+      selectedItem = _egyptCode();
       _onInit(selectedItem);
     }
   }
@@ -252,18 +242,7 @@ class CodePickerWidgetState extends State<CodePickerWidget> {
   void initState() {
     super.initState();
 
-    if (widget.initialSelection != null) {
-      selectedItem = elements.firstWhere(
-              (item) =>
-          (item.code!.toUpperCase() ==
-              widget.initialSelection!.toUpperCase()) ||
-              (item.dialCode == widget.initialSelection) ||
-              (item.name!.toUpperCase() ==
-                  widget.initialSelection!.toUpperCase()),
-          orElse: () => elements[0]);
-    } else {
-      selectedItem = elements[0];
-    }
+    selectedItem = _egyptCode();
 
     favoriteElements = elements
         .where((item) =>
@@ -274,6 +253,11 @@ class CodePickerWidgetState extends State<CodePickerWidget> {
         null)
         .toList();
   }
+
+  CountryCode _egyptCode() => elements.firstWhere(
+        (item) => item.code?.toUpperCase() == 'EG',
+        orElse: () => CountryCode.fromCountryCode('EG'),
+      );
 
   void showCodePickerWidgetDialog() async {
     final item = await showDialog(

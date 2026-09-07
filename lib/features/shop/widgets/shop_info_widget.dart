@@ -5,7 +5,6 @@ import 'package:flutter_sixvalley_ecommerce/common/basewidget/not_logged_in_bott
 import 'package:flutter_sixvalley_ecommerce/common/basewidget/show_custom_snakbar_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/brand/controllers/brand_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/category/controllers/category_controller.dart';
-import 'package:flutter_sixvalley_ecommerce/features/chat/controllers/chat_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/product/controllers/seller_product_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/shop/domain/enums/vacation_duration_type.dart';
 import 'package:flutter_sixvalley_ecommerce/features/splash/controllers/splash_controller.dart';
@@ -163,15 +162,7 @@ class ShopInfoWidget extends StatelessWidget {
                                     },
                                   ));
                                 }else  {
-                                  Provider.of<ChatController>(context, listen: false).setUserTypeIndex(context, 1);
-                                  RouterHelper.getChatScreenRoute(
-                                    action: RouteAction.push,
-                                    id: sellerId ?? 0,
-                                    name: sellerName,
-                                    userType: 1,
-                                    isShopOnVacation: vacationIsOn,
-                                    image: sellerId == 0 ? splashController.configModel?.inHouseShop?.imageFullUrl?.path ?? '' : shopImage,
-                                  );
+                                  RouterHelper.getSupportTicketRoute(action: RouteAction.push);
                                 }
                               }
                             }, child : const CustomAssetImageWidget(Images.storeChatIcon, height: 20, width: 20)),

@@ -1,11 +1,9 @@
-import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sixvalley_ecommerce/features/contact_us/controllers/contact_us_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/contact_us/domain/models/contact_us_body.dart';
 import 'package:flutter_sixvalley_ecommerce/helper/velidate_check.dart';
 import 'package:flutter_sixvalley_ecommerce/localization/language_constrants.dart';
 import 'package:flutter_sixvalley_ecommerce/features/auth/controllers/auth_controller.dart';
-import 'package:flutter_sixvalley_ecommerce/features/splash/controllers/splash_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/main.dart';
 import 'package:flutter_sixvalley_ecommerce/utill/dimensions.dart';
 import 'package:flutter_sixvalley_ecommerce/utill/images.dart';
@@ -15,7 +13,9 @@ import 'package:flutter_sixvalley_ecommerce/common/basewidget/custom_textfield_w
 import 'package:provider/provider.dart';
 
 class ContactUsScreen extends StatefulWidget {
-  const ContactUsScreen({super.key});
+  const ContactUsScreen({super.key, this.isPasswordReset = false});
+
+  final bool isPasswordReset;
 
   @override
   State<ContactUsScreen> createState() => _ContactUsScreenState();
@@ -33,7 +33,12 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
   @override
   void initState() {
     super.initState();
-    Provider.of<AuthController>(context, listen: false).setCountryCode(CountryCode.fromCountryCode(Provider.of<SplashController>(context, listen: false).configModel!.countryCode!).dialCode!, notify: false);
+    Provider.of<AuthController>(context, listen: false).setCountryCode('+20', notify: false);
+    if (widget.isPasswordReset) {
+      subjectController.text = getTranslated('password_reset_support_subject', context) ?? 'Password reset support';
+      messageController.text = getTranslated('password_reset_support_request_message', context) ??
+          'I need help resetting my password. Please contact me after verifying my account details.';
+    }
   }
 
   @override
@@ -76,12 +81,8 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     labelText: getTranslated('enter_mobile_number', context),
                     controller: phoneController,
                     required: true,
-                    showCodePicker: true,
-                    countryDialCode: authProvider.countryDialCode,
-                    onCountryChanged: (CountryCode countryCode) {
-                      authProvider.countryDialCode = countryCode.dialCode!;
-                      authProvider.setCountryCode(countryCode.dialCode!);
-                    },
+                    showCodePicker: false,
+                    countryDialCode: '+20',
                     isAmount: true,
                     inputAction: TextInputAction.next,
                     inputType: TextInputType.phone,

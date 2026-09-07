@@ -7,6 +7,8 @@ class SupportTicketModel {
   String? _description;
   String? _reply;
   String? _status;
+  String? _purpose;
+  String? _reviewStatus;
   String? _createdAt;
   String? _updatedAt;
 
@@ -19,6 +21,8 @@ class SupportTicketModel {
         String? description,
         String? reply,
         String? status,
+        String? purpose,
+        String? reviewStatus,
         String? createdAt,
         String? updatedAt}) {
     _id = id;
@@ -29,6 +33,8 @@ class SupportTicketModel {
     _description = description;
     _reply = reply;
     _status = status;
+    _purpose = purpose;
+    _reviewStatus = reviewStatus;
     _createdAt = createdAt;
     _updatedAt = updatedAt;
   }
@@ -41,6 +47,8 @@ class SupportTicketModel {
   String? get description => _description;
   String? get reply => _reply;
   String? get status => _status;
+  String? get purpose => _purpose;
+  String? get reviewStatus => _reviewStatus;
   String? get createdAt => _createdAt;
   String? get updatedAt => _updatedAt;
 
@@ -53,6 +61,8 @@ class SupportTicketModel {
     _description = json['description'];
     _reply = json['reply'];
     _status = json['status'];
+    _purpose = json['purpose'];
+    _reviewStatus = json['review_status'];
     _createdAt = json['created_at'];
     _updatedAt = json['updated_at'];
   }
@@ -67,6 +77,8 @@ class SupportTicketModel {
     data['description'] = _description;
     data['reply'] = _reply;
     data['status'] = _status;
+    data['purpose'] = _purpose;
+    data['review_status'] = _reviewStatus;
     data['created_at'] = _createdAt;
     data['updated_at'] = _updatedAt;
     return data;

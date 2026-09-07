@@ -48,6 +48,8 @@ class OrderDetailsController with ChangeNotifier {
   List<File> reviewImages = [];
   bool _isInvoiceLoading = false;
   bool get isInvoiceLoading => _isInvoiceLoading;
+  bool _isConfirmingReceipt = false;
+  bool get isConfirmingReceipt => _isConfirmingReceipt;
 
 
 
@@ -145,6 +147,29 @@ class OrderDetailsController with ChangeNotifier {
       orders = Orders.fromJson(apiResponse.response!.data);
     }
     notifyListeners();
+  }
+
+  Future<bool> confirmReceipt(int orderId, BuildContext context) async {
+    _isConfirmingReceipt = true;
+    notifyListeners();
+    final ApiResponseModel response = await orderDetailsServiceInterface.confirmReceipt(orderId);
+    final success = response.response != null && response.response!.statusCode == 200;
+    if (success) {
+      await getOrderFromOrderId(orderId.toString());
+      await getOrderDetails(orderId.toString());
+      if (context.mounted) {
+        showCustomSnackBarWidget(
+          getTranslated('customer_receipt_confirmed_successfully', context) ?? '',
+          context,
+          snackBarType: SnackBarType.success,
+        );
+      }
+    } else {
+      ApiChecker.checkApi(response);
+    }
+    _isConfirmingReceipt = false;
+    notifyListeners();
+    return success;
   }
 
 

@@ -1,10 +1,6 @@
-import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sixvalley_ecommerce/common/basewidget/custom_asset_image_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/order_details/controllers/order_details_controller.dart';
-import 'package:flutter_sixvalley_ecommerce/features/splash/controllers/splash_controller.dart';
-import 'package:flutter_sixvalley_ecommerce/features/splash/domain/models/config_model.dart';
-import 'package:flutter_sixvalley_ecommerce/helper/country_code_helper.dart';
 import 'package:flutter_sixvalley_ecommerce/helper/route_healper.dart';
 import 'package:flutter_sixvalley_ecommerce/helper/velidate_check.dart';
 import 'package:flutter_sixvalley_ecommerce/localization/language_constrants.dart';
@@ -26,7 +22,7 @@ class GuestTrackOrderScreen extends StatefulWidget {
 }
 
 class _GuestTrackOrderScreenState extends State<GuestTrackOrderScreen> {
-  String? countryCode;
+  static const String countryCode = '+20';
 
   TextEditingController orderIdController = TextEditingController();
   TextEditingController phoneNumberController = TextEditingController();
@@ -42,14 +38,10 @@ class _GuestTrackOrderScreenState extends State<GuestTrackOrderScreen> {
     }
 
     if(widget.phone != null) {
-      String countryCodee = CountryCodeHelper.getCountryCode(widget.phone ?? '')!;
-      countryCode = countryCodee;
-
-      String phoneNumberOnly = CountryCodeHelper.extractPhoneNumber(countryCode!, widget.phone ?? '');
-      phoneNumberController.text = phoneNumberOnly;
-    } else {
-      final ConfigModel configModel = Provider.of<SplashController>(context, listen: false).configModel!;
-      countryCode ??= CountryCode.fromCountryCode(configModel.countryCode!).dialCode;
+      final storedPhone = (widget.phone ?? '').replaceAll(RegExp(r'\D'), '');
+      phoneNumberController.text = storedPhone.startsWith('20')
+          ? storedPhone.substring(2)
+          : (storedPhone.startsWith('0') ? storedPhone.substring(1) : storedPhone);
     }
   }
 
@@ -118,7 +110,7 @@ class _GuestTrackOrderScreenState extends State<GuestTrackOrderScreen> {
 
                   CustomTextFieldWidget(
                     countryDialCode: countryCode,
-                    showCodePicker: true,
+                    showCodePicker: false,
                     inputType: TextInputType.phone,
                     prefixColor: Theme.of(context).primaryColor,
                     controller: phoneNumberController,
@@ -132,9 +124,6 @@ class _GuestTrackOrderScreenState extends State<GuestTrackOrderScreen> {
                     ),
                     showLabelText: false,
                     validator: (value)=> ValidateCheck.validateEmptyText(value, 'phone_number_is_required'),
-                    onCountryChanged: (CountryCode value) {
-                      countryCode = value.dialCode;
-                    },
                   ),
                   const SizedBox(height: Dimensions.paddingSizeExtraOverLarge),
 
@@ -146,7 +135,10 @@ class _GuestTrackOrderScreenState extends State<GuestTrackOrderScreen> {
                     onTap: () async {
                       FocusManager.instance.primaryFocus?.unfocus();
                       String orderId = orderIdController.text.trim();
-                      String phone = countryCode! + phoneNumberController.text.trim();
+                      var localPhone = phoneNumberController.text.replaceAll(RegExp(r'\D'), '');
+                      if (localPhone.startsWith('20')) localPhone = localPhone.substring(2);
+                      if (localPhone.startsWith('0')) localPhone = localPhone.substring(1);
+                      String phone = '$countryCode$localPhone';
 
                       if(formKey.currentState?.validate() ?? false) {
                         await orderTrackingProvider.trackOrder(orderId: orderId, phoneNumber: phone, isUpdate: true,).then((value) async {

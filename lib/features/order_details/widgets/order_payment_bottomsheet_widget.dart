@@ -39,10 +39,6 @@ class OrderPaymentMethodBottomSheetWidgetState extends State<OrderPaymentMethodB
 
   @override
   void initState() {
-    changeAmountTextController.text = '${Provider.of<CheckoutController>(context, listen: false).cashChangesAmount ?? ''}';
-    if((configModel?.cashOnDelivery ?? false) && !widget.onlyDigital && !checkoutController.isCODChecked) {
-      checkoutController.setOfflineChecked('cod', notify: false);
-    }
     _orderId = widget.orderId;
     super.initState();
   }
@@ -126,10 +122,9 @@ class OrderPaymentMethodBottomSheetWidgetState extends State<OrderPaymentMethodB
 
 
                               ///change amount
-                              ChangeAmountWidget(changeAmountTextController: changeAmountTextController),
 
 
-                              if((configModel?.digitalPayment ?? false) && (configModel?.paymentMethods?.isNotEmpty ?? false) && !checkoutController.isCODChecked)
+                              if((configModel?.digitalPayment ?? false) && (configModel?.paymentMethods?.isNotEmpty ?? false))
                                 SizedBox(height: Dimensions.paddingSizeSmall),
 
 

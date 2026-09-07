@@ -5,6 +5,10 @@ class WalletTransactionModel {
   int? offset;
   int? totalSize;
   double? totalWalletBalance;
+  double? insuranceAvailableBalance;
+  double? insuranceHeldBalance;
+  String? insuranceNextMaturityAt;
+  List<CustomerInsuranceLedgerEntry>? insuranceLedgerEntries;
   String? filterBy;
   DateTime? startDate;
   DateTime? endDate;
@@ -24,11 +28,14 @@ class WalletTransactionModel {
       transactionTypes = List<String>.from(json['transaction_types'].map((id) => id.toString()));
     }
 
-    if(json['total_wallet_balance'] != null){
-      totalWalletBalance = json['total_wallet_balance'].toDouble( );
-    }else{
-      totalWalletBalance = 0.0;
-    }
+    totalWalletBalance = double.tryParse('${json['total_wallet_balance'] ?? 0}') ?? 0;
+    insuranceAvailableBalance = double.tryParse('${json['insurance_available_balance'] ?? 0}') ?? 0;
+    insuranceHeldBalance = double.tryParse('${json['insurance_held_balance'] ?? 0}') ?? 0;
+    insuranceNextMaturityAt = json['insurance_next_maturity_at'];
+    insuranceLedgerEntries = (json['insurance_ledger_entries'] as List? ?? const [])
+        .whereType<Map>()
+        .map((item) => CustomerInsuranceLedgerEntry.fromJson(Map<String, dynamic>.from(item)))
+        .toList(growable: false);
 
     if (json['wallet_transaction_list'] != null) {
       walletTransactionList = <WalletTransactionList>[];
@@ -38,6 +45,35 @@ class WalletTransactionModel {
     }
   }
 
+}
+
+class CustomerInsuranceLedgerEntry {
+  final int id;
+  final int? orderId;
+  final String entryType;
+  final double credit;
+  final double debit;
+  final String? createdAt;
+
+  const CustomerInsuranceLedgerEntry({
+    required this.id,
+    this.orderId,
+    required this.entryType,
+    required this.credit,
+    required this.debit,
+    this.createdAt,
+  });
+
+  factory CustomerInsuranceLedgerEntry.fromJson(Map<String, dynamic> json) {
+    return CustomerInsuranceLedgerEntry(
+      id: int.tryParse('${json['id'] ?? 0}') ?? 0,
+      orderId: int.tryParse('${json['order_id'] ?? ''}'),
+      entryType: json['entry_type']?.toString() ?? '',
+      credit: double.tryParse('${json['credit'] ?? 0}') ?? 0,
+      debit: double.tryParse('${json['debit'] ?? 0}') ?? 0,
+      createdAt: json['created_at']?.toString(),
+    );
+  }
 }
 
 class WalletTransactionList {

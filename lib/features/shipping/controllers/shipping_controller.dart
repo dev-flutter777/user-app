@@ -29,6 +29,8 @@ class ShippingController extends ChangeNotifier {
   String? _updateQuantityErrorText;
   String? get addOrderStatusErrorText => _updateQuantityErrorText;
   bool get isLoading => _isLoading;
+  List<Map<String, dynamic>> _quotedOptions = [];
+  List<Map<String, dynamic>> get quotedOptions => _quotedOptions;
 
 
   final List<int> _chosenShippingMethodIndex =[];
@@ -137,6 +139,37 @@ class ShippingController extends ChangeNotifier {
       ApiChecker.checkApi( apiResponse);
     }
     notifyListeners();
+  }
+
+  Future<bool> quoteForAddress(BuildContext context, int addressId) async {
+    _isLoading = true;
+    notifyListeners();
+    final apiResponse = await shippingServiceInterface.quoteForAddress(addressId);
+    _isLoading = false;
+    if (apiResponse.response != null && apiResponse.response!.statusCode == 200) {
+      _quotedOptions = List<Map<String, dynamic>>.from(apiResponse.response!.data['options'] ?? const []);
+      notifyListeners();
+      return _quotedOptions.isNotEmpty;
+    }
+    ApiChecker.checkApi(apiResponse);
+    notifyListeners();
+    return false;
+  }
+
+  Future<bool> selectQuoteForAddress(BuildContext context, int addressId, String option) async {
+    _isLoading = true;
+    notifyListeners();
+    final apiResponse = await shippingServiceInterface.selectQuoteForAddress(addressId, option);
+    _isLoading = false;
+    if (apiResponse.response != null && apiResponse.response!.statusCode == 200) {
+      await Provider.of<CartController>(context, listen: false).getCartData(context);
+      await getChosenShippingMethod(context);
+      notifyListeners();
+      return true;
+    }
+    ApiChecker.checkApi(apiResponse);
+    notifyListeners();
+    return false;
   }
 
 

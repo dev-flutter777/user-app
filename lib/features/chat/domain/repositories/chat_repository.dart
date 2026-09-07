@@ -79,7 +79,7 @@ class ChatRepository implements ChatRepositoryInterface {
     if(platformFile != null ) {
       if(platformFile.isNotEmpty) {
         for(PlatformFile pfile in platformFile) {
-          request.files.add(http.MultipartFile('file[]', pfile.readStream!, pfile.size, filename: basename(pfile.name)));
+          request.files.add(http.MultipartFile('file[]', pfile.readAsByteStream(), await pfile.length(), filename: basename(pfile.name)));
         }
       }
     }

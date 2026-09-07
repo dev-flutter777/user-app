@@ -20,10 +20,7 @@ abstract class CheckoutServiceInterface{
 
   Future<dynamic> offlinePaymentList();
 
-  Future<dynamic> getActivationInvoice();
-
   Future<dynamic> getReferralAmount(String? amount);
-
-  Future<dynamic> submitInvoicePayment(String endpoint, Map<String, dynamic> data);
+  Future<dynamic> getOrderInsuranceQuote(String? couponCode);
 
 }

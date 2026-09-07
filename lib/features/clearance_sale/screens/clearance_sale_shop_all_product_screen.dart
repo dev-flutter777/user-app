@@ -53,7 +53,7 @@ class _ClearanceSaleShopProductScreenState extends State<ClearanceSaleShopProduc
           children: [
             ClearanceCustomAppBar(
               title: Column(children: [
-                Text('$shopName',
+                Text(getTranslated('products', context) ?? '',
                     style: textRegular.copyWith(fontSize: Dimensions.fontSizeDefault, color: Theme.of(context).textTheme.bodyLarge?.color),
                     maxLines: 1,textAlign: TextAlign.start, overflow: TextOverflow.ellipsis
                 ),

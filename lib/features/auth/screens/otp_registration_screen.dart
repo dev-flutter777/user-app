@@ -1,4 +1,3 @@
-import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sixvalley_ecommerce/common/basewidget/custom_asset_image_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/common/basewidget/custom_button_widget.dart';
@@ -44,8 +43,7 @@ class _OtpRegistrationScreenState extends State<OtpRegistrationScreen> {
     _nameController = TextEditingController();
     _phoneNumberController = TextEditingController();
 
-    final configModel = Provider.of<SplashController>(context, listen: false).configModel!;
-    countryCode ??= CountryCode.fromCountryCode(configModel.countryCode!).dialCode;
+    countryCode = '+20';
 
     if(widget.userName != null && widget.userName!.isNotEmpty){
       _nameController?.text = widget.userName!;
@@ -143,11 +141,8 @@ class _OtpRegistrationScreenState extends State<OtpRegistrationScreen> {
                                 prefixColor: Theme.of(context).primaryColor,
                               ) :
                               CustomTextFieldWidget(
-                                showCodePicker: true,
-                                countryDialCode: countryCode,
-                                onCountryChanged: (CountryCode value) {
-                                  countryCode = value.dialCode;
-                                },
+                                showCodePicker: false,
+                                countryDialCode: '+20',
                                 //hintText: getTranslated('demo_gmail', context),
                                 isShowBorder: true,
                                 hintText: '',
@@ -200,13 +195,13 @@ class _OtpRegistrationScreenState extends State<OtpRegistrationScreen> {
                                             }
                                           });
                                         }else {
-                                          phone = countryCode! + phone;
+                                          phone = '+20' + phone;
 
                                           authProvider.registerWithSocialMedia(name, email: widget.userInput, phone: phone).then((value) {
                                             final (responseModel, tempToken) = value;
                                             if(responseModel.isSuccess && tempToken == null) {
                                               authProvider.saveUserEmailAndPassword(UserLogData(
-                                                countryCode:  countryCode,
+                                                countryCode: '+20',
                                                 phoneNumber: phone,
                                                 email: widget.userInput,
                                                 password: null,

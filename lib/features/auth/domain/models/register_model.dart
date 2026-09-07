@@ -9,8 +9,9 @@ class RegisterModel {
   String? referCode;
   int? termsAccepted;    
   int? privacyAccepted;
+  List<int> policyVersionIds = const [];
 
-  RegisterModel({this.email, this.password, this.fName, this.lName, this.socialId,this.loginMedium, this.referCode, this.termsAccepted, this.privacyAccepted});
+  RegisterModel({this.email, this.password, this.fName, this.lName, this.socialId,this.loginMedium, this.referCode, this.termsAccepted, this.privacyAccepted, this.policyVersionIds = const []});
 
   RegisterModel.fromJson(Map<String, dynamic> json) {
     email = json['email'];
@@ -23,6 +24,7 @@ class RegisterModel {
     referCode = json['referral_code'];
     termsAccepted = json['terms_accepted'];
     privacyAccepted = json['privacy_accepted'];
+    policyVersionIds = (json['policy_version_ids'] as List? ?? const []).map((id) => int.parse(id.toString())).toList();
   }
 
   Map<String, dynamic> toJson() {
@@ -37,6 +39,7 @@ class RegisterModel {
     data['referral_code'] = referCode;
     data['terms_accepted'] = termsAccepted; 
     data['privacy_accepted'] = privacyAccepted;
+    data['policy_version_ids'] = policyVersionIds;
     return data;
   }
 }

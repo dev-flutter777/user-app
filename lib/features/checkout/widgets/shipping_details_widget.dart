@@ -190,7 +190,7 @@ class _ShippingDetailsWidgetState extends State<ShippingDetailsWidget> {
 
 
                 isGuestMode ? const SizedBox(height: Dimensions.paddingSizeSmall) : const SizedBox(),
-                if(widget.billingAddress || shippingProvider.sameAsBilling)
+                if(widget.billingAddress)
                   Container(
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardColor,

@@ -1,15 +1,12 @@
-import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sixvalley_ecommerce/localization/language_constrants.dart';
 import 'package:flutter_sixvalley_ecommerce/features/auth/controllers/auth_controller.dart';
-import 'package:flutter_sixvalley_ecommerce/features/splash/controllers/splash_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/utill/dimensions.dart';
 import 'package:flutter_sixvalley_ecommerce/utill/images.dart';
 import 'package:flutter_sixvalley_ecommerce/common/basewidget/custom_button_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/common/basewidget/show_custom_snakbar_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/common/basewidget/custom_textfield_widget.dart';
 import 'package:provider/provider.dart';
-import '../widgets/code_picker_widget.dart';
 
 class MobileVerificationScreen extends StatefulWidget {
   final String tempToken;
@@ -23,13 +20,12 @@ class MobileVerificationScreenState extends State<MobileVerificationScreen> {
 
   TextEditingController? _numberController;
   final FocusNode _numberFocus = FocusNode();
-  String? _countryDialCode = '+880';
+  static const String _countryDialCode = '+20';
 
   @override
   void initState() {
     super.initState();
     _numberController = TextEditingController();
-    _countryDialCode = CountryCode.fromCountryCode(Provider.of<SplashController>(context, listen: false).configModel?.countryCode??'BD').dialCode;
   }
 
 
@@ -61,16 +57,10 @@ class MobileVerificationScreenState extends State<MobileVerificationScreen> {
                     Container(decoration: BoxDecoration(color: Theme.of(context).highlightColor,
                         borderRadius: BorderRadius.circular(10)),
                       child: Row(children: [
-                        CodePickerWidget(
-                          onChanged: (CountryCode countryCode) {
-                            _countryDialCode = countryCode.dialCode;
-                          },
-                          initialSelection: _countryDialCode,
-                          favorite: [_countryDialCode??'BD'],
-                          showDropDownButton: true,
-                          padding: EdgeInsets.zero,
-                          showFlagMain: true,
-                          textStyle: TextStyle(color: Theme.of(context).textTheme.displayLarge?.color)),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeDefault),
+                          child: Text(_countryDialCode, style: TextStyle(color: Theme.of(context).textTheme.displayLarge?.color)),
+                        ),
 
 
                         Expanded(child: CustomTextFieldWidget(
@@ -87,7 +77,7 @@ class MobileVerificationScreenState extends State<MobileVerificationScreen> {
                     !authProvider.isPhoneNumberVerificationButtonLoading ?
                     CustomButton(buttonText: getTranslated('continue', context),
                       onTap: () async {
-                        String number = _countryDialCode??'BD${_numberController?.text.trim()}';
+                        String number = _countryDialCode + (_numberController?.text.trim() ?? '');
                         String numberChk = _numberController?.text.trim()??'';
 
                         if (numberChk.isEmpty) {

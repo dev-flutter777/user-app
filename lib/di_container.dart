@@ -157,6 +157,8 @@ import 'package:flutter_sixvalley_ecommerce/features/support/domain/repositories
 import 'package:flutter_sixvalley_ecommerce/features/support/domain/services/support_ticket_service.dart';
 import 'package:flutter_sixvalley_ecommerce/features/support/domain/services/support_ticket_service_interface.dart';
 import 'package:flutter_sixvalley_ecommerce/features/wallet/controllers/wallet_controller.dart';
+import 'package:flutter_sixvalley_ecommerce/features/order_insurance/controllers/customer_order_insurance_controller.dart';
+import 'package:flutter_sixvalley_ecommerce/features/order_insurance/domain/repositories/customer_order_insurance_repository.dart';
 import 'package:flutter_sixvalley_ecommerce/features/wallet/domain/repositories/wallet_repository.dart';
 import 'package:flutter_sixvalley_ecommerce/features/wallet/domain/repositories/wallet_repository_interface.dart';
 import 'package:flutter_sixvalley_ecommerce/features/wallet/domain/services/wallet_service.dart';
@@ -231,6 +233,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => CompareRepository(dioClient: sl()));
   sl.registerLazySingleton(() => LoyaltyPointRepository(dioClient: sl()));
   sl.registerLazySingleton(() => CheckoutRepository(dioClient: sl()));
+  sl.registerLazySingleton(() => CustomerOrderInsuranceRepository(dioClient: sl()));
   sl.registerLazySingleton(() => LocationRepository(dioClient: sl()));
   sl.registerLazySingleton(() => ShippingRepository(dioClient: sl()));
   sl.registerLazySingleton(() => ContactUsRepository(dioClient: sl()));
@@ -271,6 +274,7 @@ Future<void> init() async {
   sl.registerFactory(() => CompareController(compareServiceInterface: sl()));
   sl.registerFactory(() => LoyaltyPointController(loyaltyPointServiceInterface: sl()));
   sl.registerFactory(() => CheckoutController(checkoutServiceInterface: sl()));
+  sl.registerFactory(() => CustomerOrderInsuranceController(repository: sl()));
   sl.registerFactory(() => LocationController(locationServiceInterface: sl()));
   sl.registerFactory(() => ShippingController(shippingServiceInterface: sl()));
   sl.registerFactory(() => ContactUsController(contactUsServiceInterface: sl()));

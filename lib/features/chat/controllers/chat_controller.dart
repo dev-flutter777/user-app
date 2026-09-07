@@ -274,7 +274,7 @@ class ChatController extends ChangeNotifier {
         pickedMediaStored?.add(MediaFileModel(file: pickedImage, thumbnailPath: pickedImage.path, isVideo: false));
       }
     } else {
-      FilePickerResult? filePickerResult =  await FilePicker.pickFiles(
+      List<PlatformFile>? filePickerResult =  await FilePicker.pickFiles(
         type: FileType.custom,
         allowMultiple: true,
         allowedExtensions: [
@@ -283,7 +283,7 @@ class ChatController extends ChangeNotifier {
         ],
       );
 
-      _pickedImageFiles = filePickerResult?.files ?? [];
+      _pickedImageFiles = filePickerResult ?? [];
       List<PlatformFile> validatedFiles = [];
       bool hasInvalidFile = false;
 
@@ -475,7 +475,7 @@ class ChatController extends ChangeNotifier {
         allowedExtensions: allowedFileExtensions,
         allowMultiple: true,
         withReadStream: true,
-      ))?.files ;
+      ));
 
       List<PlatformFile> validatedFiles = [];
       bool hasInvalidFile = false;

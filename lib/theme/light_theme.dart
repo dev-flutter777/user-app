@@ -31,7 +31,7 @@ ThemeData light({Color? primaryColor, Color? secondaryColor})=> ThemeData(
     tertiary: const Color(0xFFFFBB38), // Warning Color
     tertiaryContainer: const Color(0xFFADC9F3),
     onTertiaryContainer: const Color(0xFF04BB7B), // Success Color
-    onPrimary: const Color(0xFF7FBBFF),
+    onPrimary: Colors.white,
     surface: const Color(0xFFF4F8FF),
     onSecondary: secondaryColor ?? const Color(0xFFF88030),
     error: const Color(0xFFFF4040), // Danger Color

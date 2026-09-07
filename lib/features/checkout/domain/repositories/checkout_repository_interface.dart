@@ -23,10 +23,6 @@ abstract class CheckoutRepositoryInterface implements RepositoryInterface{
   Future<dynamic> offlinePaymentList();
 
   Future<dynamic> getReferralAmount(String? amount);
+  Future<dynamic> getOrderInsuranceQuote(String? couponCode);
   
-  Future<dynamic> getActivationInvoice();
-
-  Future<dynamic> submitInvoicePayment(String endpoint, Map<String, dynamic> data);
-
-
 }

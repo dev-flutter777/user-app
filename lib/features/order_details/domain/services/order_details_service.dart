@@ -50,6 +50,11 @@ class OrderDetailsService implements OrderDetailsServiceInterface{
   }
 
   @override
+  Future confirmReceipt(int orderId) async {
+    return await orderDetailsRepositoryInterface.confirmReceipt(orderId);
+  }
+
+  @override
   Future<HttpClientResponse> productDownload(String url) async{
     return await orderDetailsRepositoryInterface.productDownload(url);
   }

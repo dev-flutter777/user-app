@@ -43,6 +43,25 @@ class AuthController with ChangeNotifier {
   bool _isAcceptPrivacy = false;
   bool get isAcceptPrivacy => _isAcceptPrivacy;
 
+  List<Map<String, dynamic>> _requiredRegistrationPolicies = [];
+  List<Map<String, dynamic>> get requiredRegistrationPolicies => _requiredRegistrationPolicies;
+  bool _registrationPoliciesLoaded = false;
+  bool get registrationPoliciesLoaded => _registrationPoliciesLoaded;
+
+  Future<void> loadRegistrationPolicies() async {
+    _registrationPoliciesLoaded = false;
+    notifyListeners();
+    final response = await authServiceInterface.getRegistrationPolicies();
+    if (response.response?.statusCode == 200) {
+      final data = response.response!.data;
+      _requiredRegistrationPolicies = List<Map<String, dynamic>>.from(data['policies'] ?? const []);
+    } else {
+      _requiredRegistrationPolicies = [];
+    }
+    _registrationPoliciesLoaded = true;
+    notifyListeners();
+  }
+
   bool _isNumberLogin = false;
   bool get isNumberLogin => _isNumberLogin;
 
@@ -72,7 +91,8 @@ class AuthController with ChangeNotifier {
   bool get isForgotPasswordLoading => _isForgotPasswordLoading;
   set setForgetPasswordLoading(bool value) => _isForgotPasswordLoading = value;
 
-  String countryDialCode = '+880';
+  // Customer phone flows are limited to Egyptian numbers; country selection is intentionally disabled.
+  String countryDialCode = '+20';
   void setCountryCode( String countryCode, {bool notify = true}){
     countryDialCode  = countryCode;
     if(notify){

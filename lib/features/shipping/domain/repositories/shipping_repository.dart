@@ -48,6 +48,33 @@ class ShippingRepository implements ShippingRepositoryInterface{
     }
   }
 
+  @override
+  Future<ApiResponseModel> quoteForAddress(int addressId) async {
+    try {
+      final response = await dioClient!.post(AppConstants.quoteShippingForAddress, data: {
+        'address_id': addressId,
+        'guest_id': Provider.of<AuthController>(Get.context!, listen: false).getGuestToken(),
+      });
+      return ApiResponseModel.withSuccess(response);
+    } catch (e) {
+      return ApiResponseModel.withError(ApiErrorHandler.getMessage(e));
+    }
+  }
+
+  @override
+  Future<ApiResponseModel> selectQuoteForAddress(int addressId, String option) async {
+    try {
+      final response = await dioClient!.post(AppConstants.selectShippingQuoteForAddress, data: {
+        'address_id': addressId,
+        'option': option,
+        'guest_id': Provider.of<AuthController>(Get.context!, listen: false).getGuestToken(),
+      });
+      return ApiResponseModel.withSuccess(response);
+    } catch (e) {
+      return ApiResponseModel.withError(ApiErrorHandler.getMessage(e));
+    }
+  }
+
 
 
   @override

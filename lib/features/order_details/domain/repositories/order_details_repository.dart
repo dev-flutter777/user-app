@@ -138,6 +138,16 @@ class OrderDetailsRepository implements OrderDetailsRepositoryInterface{
     }
   }
 
+  @override
+  Future<ApiResponseModel> confirmReceipt(int orderId) async {
+    try {
+      final response = await dioClient!.post('${AppConstants.confirmOrderReceiptUri}$orderId');
+      return ApiResponseModel.withSuccess(response);
+    } catch (e) {
+      return ApiResponseModel.withError(ApiErrorHandler.getMessage(e));
+    }
+  }
+
 
 
 

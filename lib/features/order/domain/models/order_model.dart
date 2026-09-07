@@ -81,6 +81,14 @@ class Orders {
   int? editedStatus;
   double? editDueAmount;
   double? editReturnAmount;
+  String? shipmentReference;
+  String? shippingOperationalStatus;
+  String? shippingResponsibleParty;
+  String? customerDeliveryConfirmationStatus;
+  String? customerDeliveryConfirmationDueAt;
+  Map<String, dynamic>? shippingPriceSnapshot;
+  String? commerceFlowStatus;
+  Map<String, dynamic>? refundSummary;
 
 
 
@@ -223,6 +231,16 @@ class Orders {
     editedStatus = json['edited_status'];
     editDueAmount = json['edit_due_amount'] != null ? double.tryParse(json['edit_due_amount'].toString()) : null;
     editReturnAmount = json['edit_return_amount'] != null ? double.tryParse(json['edit_return_amount'].toString()) : null;
+    shipmentReference = json['shipment_reference']?.toString();
+    shippingOperationalStatus = json['shipping_operational_status']?.toString();
+    shippingResponsibleParty = json['shipping_responsible_party']?.toString();
+    customerDeliveryConfirmationStatus = json['customer_delivery_confirmation_status']?.toString();
+    customerDeliveryConfirmationDueAt = json['customer_delivery_confirmation_due_at']?.toString();
+    shippingPriceSnapshot = json['shipping_price_snapshot'] is Map
+        ? Map<String, dynamic>.from(json['shipping_price_snapshot']) : null;
+    commerceFlowStatus = json['commerce_flow_status']?.toString();
+    refundSummary = json['refund_summary'] is Map
+        ? Map<String, dynamic>.from(json['refund_summary']) : null;
 
   }
 }

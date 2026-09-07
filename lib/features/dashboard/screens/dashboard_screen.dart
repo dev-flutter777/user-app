@@ -5,6 +5,7 @@ import 'package:flutter_sixvalley_ecommerce/features/cart/screens/cart_screen.da
 import 'package:flutter_sixvalley_ecommerce/features/chat/controllers/chat_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/dashboard/models/navigation_model.dart';
 import 'package:flutter_sixvalley_ecommerce/features/dashboard/widgets/dashboard_menu_widget.dart';
+import 'package:flutter_sixvalley_ecommerce/features/dashboard/widgets/customer_activation_banner_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/deal/controllers/flash_deal_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/restock/controllers/restock_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/search_product/controllers/search_product_controller.dart';
@@ -15,13 +16,13 @@ import 'package:flutter_sixvalley_ecommerce/main.dart';
 import 'package:flutter_sixvalley_ecommerce/utill/dimensions.dart';
 import 'package:flutter_sixvalley_ecommerce/features/dashboard/widgets/app_exit_card_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/chat/screens/inbox_screen.dart';
-import 'package:flutter_sixvalley_ecommerce/features/customer_packages/screens/customer_packages_screen.dart';
 import 'package:flutter_sixvalley_ecommerce/utill/images.dart';
 import 'package:flutter_sixvalley_ecommerce/features/home/screens/aster_theme_home_screen.dart';
 import 'package:flutter_sixvalley_ecommerce/features/home/screens/fashion_theme_home_screen.dart';
 import 'package:flutter_sixvalley_ecommerce/features/home/screens/home_screens.dart';
 import 'package:flutter_sixvalley_ecommerce/features/more/screens/more_screen_view.dart';
 import 'package:flutter_sixvalley_ecommerce/features/order/screens/order_screen.dart';
+import 'package:flutter_sixvalley_ecommerce/features/profile/controllers/profile_contrroller.dart';
 import 'package:provider/provider.dart';
 
 class DashBoardScreen extends StatefulWidget {
@@ -53,6 +54,7 @@ class DashBoardScreenState extends State<DashBoardScreen> {
       Provider.of<ChatController>(context, listen: false).getChatList(1, reload: false, userType: 0);
       Provider.of<ChatController>(context, listen: false).getChatList(1, reload: false, userType: 1);
       Provider.of<RestockController>(context, listen: false).getRestockProductList(1, getAll: true);
+      Provider.of<ProfileController>(context, listen: false).getUserInfo(context);
     }
 
     final SplashController splashController = Provider.of<SplashController>(context, listen: false);
@@ -86,9 +88,7 @@ class DashBoardScreenState extends State<DashBoardScreen> {
         NavigationModel(
         name: 'inbox', 
         icon: Images.messageImage, 
-        screen: CustomerPackagesScreen(
-        userToken: Provider.of<AuthController>(context, listen: false).getUserToken(), // 👈 مررنا التوكن هنا بشكل آمن
-       ),
+        screen: const InboxScreen(),
       ),
         NavigationModel(name: 'cart', icon: Images.cartArrowDownImage, screen: const CartScreen(showBackButton: false, fromDashboard: true), showCartIcon: true),
         NavigationModel(name: 'orders', icon: Images.shoppingImage, screen:  const OrderScreen(isBacButtonExist: false, fromDashboard: true)),
@@ -120,7 +120,14 @@ class DashBoardScreenState extends State<DashBoardScreen> {
       child: Scaffold(
         key: _scaffoldKey,
 
-        body: PageStorage(bucket: bucket, child: _screens[_pageIndex].screen),
+        body: Consumer<ProfileController>(builder: (context, profileController, _) {
+          final activation = profileController.userInfoModel?.activation;
+          return Column(children: [
+            if (activation != null && !activation.isActive)
+              CustomerActivationBannerWidget(activation: activation),
+            Expanded(child: PageStorage(bucket: bucket, child: _screens[_pageIndex].screen)),
+          ]);
+        }),
         bottomNavigationBar: Container(height: 68,
           decoration: BoxDecoration(borderRadius: const BorderRadius.vertical(
               top: Radius.circular(Dimensions.paddingSizeLarge)),

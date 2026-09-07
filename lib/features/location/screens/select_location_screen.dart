@@ -8,6 +8,7 @@ import 'package:flutter_sixvalley_ecommerce/common/basewidget/custom_button_widg
 import 'package:flutter_sixvalley_ecommerce/common/basewidget/custom_app_bar_widget.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_sixvalley_ecommerce/helper/egypt_location_helper.dart';
 
 class SelectLocationScreen extends StatefulWidget {
   final GoogleMapController? googleMapController;
@@ -29,8 +30,9 @@ class SelectLocationScreenState extends State<SelectLocationScreen> {
 
   @override
   void dispose() {
+    _controller?.dispose();
+    _locationController.dispose();
     super.dispose();
-    _controller!.dispose();
   }
 
   void _openSearchDialog(BuildContext context, GoogleMapController? mapController) async {
@@ -48,8 +50,10 @@ class SelectLocationScreenState extends State<SelectLocationScreen> {
       body: Consumer<LocationController>(
           builder: (context, locationController, child) => Provider.of<SplashController>(context, listen: false).configModel!.mapApiStatus == 1 ? Stack(clipBehavior: Clip.none, children: [
             GoogleMap(mapType: MapType.normal,
+              cameraTargetBounds: CameraTargetBounds(EgyptLocationHelper.bounds),
               initialCameraPosition: CameraPosition(
-                target: LatLng(locationController.position.latitude, locationController.position.longitude), zoom: 16),
+                target: EgyptLocationHelper.normalize(LatLng(
+                  locationController.position.latitude, locationController.position.longitude)), zoom: 16),
               zoomControlsEnabled: false,
               compassEnabled: false,
               indoorViewEnabled: true,
@@ -99,6 +103,16 @@ class SelectLocationScreenState extends State<SelectLocationScreen> {
                     child: Padding(padding: const EdgeInsets.all(Dimensions.paddingSizeLarge),
                       child: CustomButton(buttonText: getTranslated('select_location', context),
                         onTap: () {
+                          final selected = LatLng(
+                            locationController.pickPosition.latitude,
+                            locationController.pickPosition.longitude,
+                          );
+                          if (!EgyptLocationHelper.contains(selected)) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text(getTranslated('select_address_inside_egypt', context) ?? ''),
+                            ));
+                            return;
+                          }
                           if(widget.googleMapController != null) {
                             widget.googleMapController!.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(target: LatLng(
                               locationController.pickPosition.latitude, locationController.pickPosition.longitude), zoom: 16)));

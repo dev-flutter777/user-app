@@ -20,6 +20,7 @@ class ProfileModel {
   double? totalOrder;
   int? isPhoneVerified;
   String? emailVerificationToken;
+  CustomerActivationModel? activation;
 
   ProfileModel(
       {this.id,
@@ -40,7 +41,8 @@ class ProfileModel {
         this.totalOrder,
         this.imageFullUrl,
         this.isPhoneVerified,
-        this.emailVerificationToken
+        this.emailVerificationToken,
+        this.activation,
       });
 
   ProfileModel.fromJson(Map<String, dynamic> json) {
@@ -88,6 +90,9 @@ class ProfileModel {
 
     emailVerificationToken = json['email_verification_token'];
     isPhoneVerified = json['is_phone_verified'];
+    activation = json['activation'] is Map
+        ? CustomerActivationModel.fromJson(Map<String, dynamic>.from(json['activation']))
+        : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -105,6 +110,45 @@ class ProfileModel {
     data['updated_at'] = updatedAt;
     data['wallet_balance'] = walletBalance;
     data['loyalty_point'] = loyaltyPoint;
+    data['activation'] = activation?.toJson();
     return data;
   }
+}
+
+class CustomerActivationModel {
+  final String? customerReference;
+  final String? status;
+  final bool isActive;
+  final int? ticketId;
+  final String? ticketStatus;
+  final String? message;
+
+  const CustomerActivationModel({
+    this.customerReference,
+    this.status,
+    required this.isActive,
+    this.ticketId,
+    this.ticketStatus,
+    this.message,
+  });
+
+  factory CustomerActivationModel.fromJson(Map<String, dynamic> json) {
+    return CustomerActivationModel(
+      customerReference: json['customer_reference']?.toString(),
+      status: json['status']?.toString(),
+      isActive: json['is_active'] == true,
+      ticketId: int.tryParse('${json['ticket_id'] ?? ''}'),
+      ticketStatus: json['ticket_status']?.toString(),
+      message: json['message']?.toString(),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'customer_reference': customerReference,
+    'status': status,
+    'is_active': isActive,
+    'ticket_id': ticketId,
+    'ticket_status': ticketStatus,
+    'message': message,
+  };
 }

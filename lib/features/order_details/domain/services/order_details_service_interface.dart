@@ -18,6 +18,8 @@ abstract class OrderDetailsServiceInterface {
 
   Future<dynamic> getTrackOrderDetailsId(String orderId);
 
+  Future<dynamic> confirmReceipt(int orderId);
+
   Future<HttpClientResponse> productDownload(String url);
 
   Future<dynamic> duePaymentByCod(int orderId, String paymentMethod, String? bringChangeAmount);

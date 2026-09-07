@@ -285,7 +285,9 @@ class ImageValidationHelper{
 
    static String getFileSizeFromPlatformFileToString(PlatformFile platformFile)  {
 
-     int sizeOfTheFileInBytes =  platformFile.size;
+     final knownSize = platformFile.lengthSync();
+     if (knownSize == null) return '—';
+     int sizeOfTheFileInBytes = knownSize;
      String fileSize = "";
 
      if((sizeOfTheFileInBytes / (1024 * 1024)) > 1){
@@ -297,7 +299,7 @@ class ImageValidationHelper{
    }
 
    static double getFileSizeFromPlatformFileToDouble(PlatformFile platformFile)  {
-     return (platformFile.size / (1024 * 1024));
+     return ((platformFile.lengthSync() ?? double.infinity) / (1024 * 1024));
    }
 
 
@@ -305,7 +307,7 @@ class ImageValidationHelper{
 
      double fileSize = 0.0;
      for (var element in platformFiles) {
-       fileSize  = (element.size / (1024 * 1024)) + fileSize;
+       fileSize  = ((element.lengthSync() ?? double.infinity) / (1024 * 1024)) + fileSize;
      }
      return fileSize;
    }

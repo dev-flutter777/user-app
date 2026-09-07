@@ -1,4 +1,3 @@
-import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sixvalley_ecommerce/common/basewidget/custom_asset_image_widget.dart';
@@ -39,8 +38,7 @@ class _OtpLoginScreenState extends State<OtpLoginScreen> {
     super.initState();
     _phoneNumberController = TextEditingController();
 
-    final ConfigModel configModel = Provider.of<SplashController>(context, listen: false).configModel!;
-    countryCode ??= CountryCode.fromCountryCode(configModel.countryCode!).dialCode;
+    countryCode = '+20';
   }
 
   @override
@@ -123,11 +121,8 @@ class _OtpLoginScreenState extends State<OtpLoginScreen> {
                                 Expanded(flex: 10, child: Column(children: [
 
                                   CustomTextFieldWidget(
-                                    showCodePicker: true,
-                                    countryDialCode: countryCode,
-                                    onCountryChanged: (CountryCode value) {
-                                      countryCode = value.dialCode;
-                                    },
+                                    showCodePicker: false,
+                                    countryDialCode: '+20',
                                     // hintText: getTranslated('number_hint', context),
                                     isShowBorder: true,
                                     controller: _phoneNumberController,

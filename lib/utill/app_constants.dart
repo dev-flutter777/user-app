@@ -11,7 +11,13 @@ import 'package:flutter_sixvalley_ecommerce/common/enums/local_caches_type_enum.
   static const int imageQuality = 100;
   static const LocalCachesTypeEnum cachesType = LocalCachesTypeEnum.all;
 
-  static const String baseUrl = 'http://192.168.1.3/ba/public';
+  /// Override at build/run time with:
+  /// `--dart-define=BASE_URL=https://example.com`
+  /// The default targets the host machine from the Android emulator.
+  static const String baseUrl = String.fromEnvironment(
+    'BASE_URL',
+    defaultValue: 'http://10.0.2.2/ba/public',
+  );
 
   static const String googleServerClientId = 'client_id here';
   static const String userId = 'userId';
@@ -23,6 +29,7 @@ import 'package:flutter_sixvalley_ecommerce/common/enums/local_caches_type_enum.
   static const String brandProductUri = '/api/v1/brands/products/';
   static const String categoryProductUri = '/api/v1/categories/products/';
   static const String registrationUri = '/api/v1/auth/register';
+  static const String registrationPoliciesUri = '/api/v1/auth/registration-policies';
   static const String loginUri = '/api/v1/auth/login';
 
   static const String logOut = '/api/v1/auth/logout';
@@ -51,6 +58,7 @@ import 'package:flutter_sixvalley_ecommerce/common/enums/local_caches_type_enum.
   static const String relatedProductUri = '/api/v1/products/related-products/';
   static const String orderUri = '/api/v1/customer/order/list?limit=10&offset=';
   static const String orderDetailsUri = '/api/v1/customer/order/details?order_id=';
+  static const String confirmOrderReceiptUri = '/api/v1/customer/order/confirm-receipt/';
   static const String orderPlaceUri = '/api/v1/customer/order/place';
   static const String sellerUri = '/api/v1/seller?slug=';
   static const String sellerProductUri = '/api/v1/seller/';
@@ -86,6 +94,8 @@ import 'package:flutter_sixvalley_ecommerce/common/enums/local_caches_type_enum.
   static const String removeFromCartUri = '/api/v1/cart/remove';
   static const String getShippingMethod = '/api/v1/shipping-method/by-seller';
   static const String chooseShippingMethod = '/api/v1/shipping-method/choose-for-order';
+    static const String quoteShippingForAddress = '/api/v1/shipping-method/quote-for-address';
+    static const String selectShippingQuoteForAddress = '/api/v1/shipping-method/select-quote-for-address';
   static const String chosenShippingMethod = '/api/v1/shipping-method/chosen';
   static const String sendOtpToPhone = '/api/v1/auth/check-phone';
   static const String resendPhoneOtpUri = '/api/v1/auth/resend-otp-check-phone';
@@ -116,6 +126,12 @@ import 'package:flutter_sixvalley_ecommerce/common/enums/local_caches_type_enum.
   static const String sellerWiseBestSellingProduct = '/api/v1/seller/';
   static const String digitalPayment = '/api/v1/digital-payment';
   static const String offlinePaymentList = '/api/v1/customer/order/offline-payment-method-list';
+  static const String orderInsuranceQuote = '/api/v1/customer/order/insurance-quote';
+  static String customerOrderInsuranceUri(int orderId) => '/api/v1/customer/order-insurance/$orderId';
+  static String customerOrderInsurancePayUri(int orderId) => '/api/v1/customer/order-insurance/$orderId/pay';
+  static String customerOrderInsuranceOfflineUri(int orderId) => '/api/v1/customer/order-insurance/$orderId/offline';
+  static String customerOrderInsuranceSupportUri(int orderId) => '/api/v1/customer/order-insurance/$orderId/support';
+  static String customerOrderInsuranceDeclineUri(int orderId) => '/api/v1/customer/order-insurance/$orderId/decline';
   static const String sellerWiseCategoryList = '/api/v1/categories?shop_slug=';
   static const String sellerWiseBrandList = '/api/v1/brands?shop_slug=';
   static const String getDigitalAuthorList = '/api/v1/products/digital-author-list?guest_id=1';
@@ -133,7 +149,6 @@ import 'package:flutter_sixvalley_ecommerce/common/enums/local_caches_type_enum.
   static const String submitDeliveryManReview = '/api/v1/customer/order/deliveryman-review/update?order_id=';
   static const String mergeGuestCart = '/api/v1/cart/get-merge-guest-cart';
   static const String orderDetailsTrack = '/api/v1/order/track-order-details?order_id=';
-  static const String activationInvoiceUri = '/api/v1/customer/activation-invoice/current';
 
 
   //address

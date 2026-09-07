@@ -2,8 +2,8 @@ import 'package:flutter_sixvalley_ecommerce/data/model/api_response.dart';
 import 'package:flutter_sixvalley_ecommerce/features/auth/controllers/auth_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/cart/domain/models/cart_model.dart';
 import 'package:flutter_sixvalley_ecommerce/features/checkout/domain/services/checkout_service_interface.dart';
+import 'package:flutter_sixvalley_ecommerce/features/checkout/domain/models/order_insurance_quote_model.dart';
 import 'package:flutter_sixvalley_ecommerce/features/offline_payment/domain/models/offline_payment_model.dart';
-import 'package:flutter_sixvalley_ecommerce/features/splash/controllers/splash_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/helper/api_checker.dart';
 import 'package:flutter_sixvalley_ecommerce/helper/route_healper.dart';
 import 'package:flutter_sixvalley_ecommerce/localization/language_constrants.dart';
@@ -37,14 +37,28 @@ class CheckoutController with ChangeNotifier {
   int get paymentMethodIndex => _paymentMethodIndex;
   bool get isCheckCreateAccount => _isCheckCreateAccount;
 
-  bool _changeAmountShow = false;
-  bool get changeAmountShow => _changeAmountShow;
-
-  double? _cashChangesAmount;
-  double? get cashChangesAmount => _cashChangesAmount;
 
   ReferralAmount? _referralAmount;
   ReferralAmount? get referralAmount => _referralAmount;
+  OrderInsuranceQuoteModel? _orderInsuranceQuote;
+  OrderInsuranceQuoteModel? get orderInsuranceQuote => _orderInsuranceQuote;
+  bool _insuranceQuoteLoading = false;
+  bool get insuranceQuoteLoading => _insuranceQuoteLoading;
+  int _quoteRequest = 0;
+
+  Future<void> getOrderInsuranceQuote({String couponCode = ''}) async {
+    final requestId = ++_quoteRequest;
+    _orderInsuranceQuote = null;
+    _insuranceQuoteLoading = true;
+    notifyListeners();
+    final response = await checkoutServiceInterface.getOrderInsuranceQuote(couponCode);
+    if (requestId != _quoteRequest) return;
+    _insuranceQuoteLoading = false;
+    if (response.response != null && response.response!.statusCode == 200) {
+      _orderInsuranceQuote = OrderInsuranceQuoteModel.fromJson(Map<String, dynamic>.from(response.response!.data));
+    }
+    notifyListeners();
+  }
 
   String selectedPaymentName = '';
   void setSelectedPayment(String payment){
@@ -61,8 +75,6 @@ class CheckoutController with ChangeNotifier {
   final TextEditingController confirmPasswordController = TextEditingController();
   List<String> inputValueList = [];
 
-
-
   Future<void> placeOrder({
     required Function callback, 
     String? addressID,
@@ -75,47 +87,7 @@ class CheckoutController with ChangeNotifier {
     int? id, 
     String? name,
     bool isfOffline = false, 
-    bool wallet = false,
-    String paymentType = 'order', // 🟢 تحديد نوع العملية
-    int? activationInvoiceId,    // 🟢 معرف فاتورة التفعيل
   }) async {
-
-    // 🟢 1. فصل لوجيك الباقة والتأمين المدمجين في أول الدالة فوراً لتجنب أي تعارض في المتغيرات
-    if (isfOffline && paymentType == 'package') {
-      _isLoading = true;
-      notifyListeners();
-
-      String packageImagePath = '';
-      Map<String, String> packageMethodInformations = {};
-
-      // تجميع الحقول الخاصة بالباقة من الكنترولرز الحالية
-      for (int i = 0; i < offlinePaymentModel!.offlineMethods![offlineMethodSelectedIndex].methodInformations!.length; i++) {
-        var field = offlinePaymentModel!.offlineMethods![offlineMethodSelectedIndex].methodInformations![i];
-        if (field.inputType == 'image') {
-          packageImagePath = inputFieldControllerList[i].text.trim();
-        } else {
-          packageMethodInformations[field.customerInput ?? ''] = inputFieldControllerList[i].text.trim();
-        }
-      }
-
-      // تشفير الحقول النصية للباقة
-      String packageBase64Info = base64Encode(utf8.encode(jsonEncode(packageMethodInformations)));
-
-      // تجهيز الـ Body المتوافق مع السيرفر
-      Map<String, dynamic> offlinePackageData = {
-        "activation_invoice_id": activationInvoiceId,
-        "method_id": offlineMethodSelectedId,
-        "method_informations": packageBase64Info,
-        "payment_note": paymentNote ?? '',
-        "payment_screenshot": packageImagePath
-      };
-      
-      // إرسال البيانات فوراً وإنهاء الدالة
-      await submitInvoicePayment(Get.context!, isOffline: true, offlineData: offlinePackageData);
-      _isLoading = false;
-      notifyListeners();
-      return; // الـ return هنا بتحميك من النزول للوجيك المنتجات تحت
-    }
 
     String imagePath = '';
     if (isfOffline) {
@@ -147,20 +119,7 @@ class CheckoutController with ChangeNotifier {
     ApiResponseModel apiResponse;
     isfOffline?
     apiResponse = await checkoutServiceInterface.offlinePaymentPlaceOrder(addressID, couponCode, couponAmount, billingAddressId, orderNote, keyList, inputValueList, offlineMethodSelectedId, offlineMethodSelectedName, paymentNote, _isCheckCreateAccount, passwordController.text.trim(), imagePath): // <-- أضفنا imagePath هنا
-    wallet?
-    apiResponse = await checkoutServiceInterface.walletPaymentPlaceOrder(addressID, couponCode, couponAmount, billingAddressId, orderNote, _isCheckCreateAccount, passwordController.text.trim()):
-
-    apiResponse = await checkoutServiceInterface.cashOnDeliveryPlaceOrder(
-      addressID: addressID,
-      couponCode: couponCode,
-      couponDiscountAmount: couponAmount,
-      billingAddressId: billingAddressId,
-      orderNote: orderNote,
-      isCheckCreateAccount: _isCheckCreateAccount,
-      password: passwordController.text.trim(),
-      cashChangeAmount: _cashChangesAmount,
-      currentCurrencyCode: Provider.of<SplashController>(Get.context!, listen: false).myCurrency?.code,
-    );
+    apiResponse = await checkoutServiceInterface.offlinePaymentPlaceOrder(addressID, couponCode, couponAmount, billingAddressId, orderNote, keyList, inputValueList, offlineMethodSelectedId, offlineMethodSelectedName, paymentNote, _isCheckCreateAccount, passwordController.text.trim(), imagePath);
 
     if (apiResponse.response != null && apiResponse.response!.statusCode == 200) {
       _isCheckCreateAccount = false;
@@ -210,9 +169,8 @@ class CheckoutController with ChangeNotifier {
 
   void resetPaymentMethod(){
     _paymentMethodIndex = -1;
-    isCODChecked = false;
-    isWalletChecked = false;
     isOfflineChecked = false;
+    isWalletChecked = false;
   }
 
 
@@ -237,26 +195,37 @@ class CheckoutController with ChangeNotifier {
 
 
   bool isOfflineChecked = false;
-  bool isCODChecked = false;
   bool isWalletChecked = false;
 
+  void selectPurchaseWallet() {
+    resetPaymentMethod();
+    isWalletChecked = true;
+    notifyListeners();
+  }
+
+  Future<void> payWithPurchaseWallet(String addressId, String couponCode, String couponDiscount, String orderNote, Function callback) async {
+    if (_isLoading || !_isAcceptTerms) return;
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final response = await checkoutServiceInterface.walletPaymentPlaceOrder(addressId, couponCode, couponDiscount, '', orderNote, false, '');
+      if (response.response?.statusCode == 200) {
+        callback(true, getTranslated('order_placed_successfully', Get.context!) ?? '', extractId(response.response.data['order_ids'].toString()), false);
+      } else {
+        ApiChecker.checkApi(response);
+      }
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   void setOfflineChecked(String type, {bool notify = true}) {
+    isWalletChecked = false;
     if(type == 'offline'){
       isOfflineChecked = !isOfflineChecked;
-      isCODChecked = false;
-      isWalletChecked = false;
       _paymentMethodIndex = -1;
       setOfflinePaymentMethodSelectedIndex(0);
-    }else if(type == 'cod'){
-      isCODChecked = !isCODChecked;
-      isOfflineChecked = false;
-      isWalletChecked = false;
-      _paymentMethodIndex = -1;
-    }else if(type == 'wallet'){
-      isWalletChecked = !isWalletChecked;
-      isOfflineChecked = false;
-      isCODChecked = false;
-      _paymentMethodIndex = -1;
     }
 
     if(notify) {
@@ -271,9 +240,8 @@ class CheckoutController with ChangeNotifier {
   void setDigitalPaymentMethodName(int index, String name) {
     _paymentMethodIndex = index;
     selectedDigitalPaymentMethodName = name;
-    isCODChecked = false;
-    isWalletChecked = false;
     isOfflineChecked = false;
+    isWalletChecked = false;
     notifyListeners();
   }
 
@@ -377,7 +345,6 @@ class CheckoutController with ChangeNotifier {
     passwordController.clear();
     confirmPasswordController.clear();
     _isCheckCreateAccount = false;
-    _cashChangesAmount = null;
   }
 
 
@@ -390,23 +357,7 @@ class CheckoutController with ChangeNotifier {
 
 
 
-  void toggleChangeAmountShow(){
-    _changeAmountShow = !_changeAmountShow;
-    notifyListeners();
-  }
-
-  void onChangeCashChangesAmount(double? amount)=> _cashChangesAmount = amount;
-
  
-  Future<void> payActivationInvoice(BuildContext context) async {
-    var response = await checkoutServiceInterface.submitInvoicePayment('/api/v1/customer/activation-invoice/pay', {});
-    if (response.statusCode == 200) {
-    showCustomSnackBarWidget("تم الدفع بنجاح", context, snackBarType: SnackBarType.success);
-
-  }
-}
-
-
   Future<ApiResponseModel> getReferralAmount(String? amount) async {
     ApiResponseModel apiResponse = await checkoutServiceInterface.getReferralAmount(amount);
     if (apiResponse.response != null && apiResponse.response!.statusCode == 200) {
@@ -431,50 +382,5 @@ class CheckoutController with ChangeNotifier {
     notifyListeners();
   }
 
-
-  // تعريف متغير الفاتورة
-dynamic _activationInvoice;
-dynamic get activationInvoice => _activationInvoice;
-
-// دالة لجلب بيانات الفاتورة من السيرفر
-Future<void> getActivationInvoiceData() async {
-  // الاتصال بـ Service التي عرفناها مسبقاً
-  var response = await checkoutServiceInterface.getActivationInvoice();
-  
-  // إذا كان الرد صحيحاً، نخزن البيانات
-  if (response != null && response.statusCode == 200) {
-    _activationInvoice = response.data;
-    notifyListeners(); 
-  }
-} 
-// دالة إرسال الدفع (سواء كان إلكتروني أو يدوي)
-// دالة الدفع (تجمع بين الدفع الإلكتروني واليدوي)
-Future<void> submitInvoicePayment(BuildContext context, {required bool isOffline, Map<String, dynamic>? offlineData}) async {
-  
-  // تحديد الـ Endpoint بناءً على الملف الذي أرسلته
-  String endpoint = isOffline 
-      ? '/api/v1/customer/activation-invoice/pay-by-offline-payment' 
-      : '/api/v1/customer/activation-invoice/pay';
-
-  try {
-    // إرسال الـ POST (لو الدفع يدوي هيبعت الـ offlineData اللي فيها صورة الوصل مثلاً)
-   var response = await checkoutServiceInterface.submitInvoicePayment(endpoint, offlineData ?? {});
-    if (response.statusCode == 200) {
-      if (isOffline) {
-        // رسالة الدفع اليدوي كما طلب الـ PDF
-        showCustomSnackBarWidget("قيد مراجعة الأدمن", context, snackBarType: SnackBarType.success);
-      } else {
-        showCustomSnackBarWidget("تم الدفع وتفعيل الباقة بنجاح", context, snackBarType: SnackBarType.success);
-      }
-      
-      // الرجوع للشاشة الرئيسية أو تفاصيل الطلب بعد النجاح
-      Navigator.pop(context); 
-    } else {
-      showCustomSnackBarWidget("حدث خطأ أثناء الدفع", context, snackBarType: SnackBarType.error);
-    }
-  } catch (e) {
-    showCustomSnackBarWidget("خطأ في الاتصال بالسيرفر", context, snackBarType: SnackBarType.error);
-  }
-}
 
 }

@@ -32,7 +32,7 @@
     </queries>
 
     <application
-        android:label="6Valley"
+        android:label="Sigma"
         android:name="${applicationName}"
         android:requestLegacyExternalStorage="true"
         android:usesCleartextTraffic="false"
@@ -42,7 +42,7 @@
         android:allowBackup="false"
         android:fullBackupContent="false">
 
-        <meta-data android:name="com.google.android.geo.API_KEY" android:value="YOUR_MAP_KEY_HERE" />
+        <meta-data android:name="com.google.android.geo.API_KEY" android:value="${MAPS_API_KEY}" />
 
         <activity
             android:name=".MainActivity"

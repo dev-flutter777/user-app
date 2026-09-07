@@ -17,7 +17,14 @@ import 'package:provider/provider.dart';
 
 
 class SupportTicketScreen extends StatefulWidget {
-  const SupportTicketScreen({super.key});
+  final bool isBackButtonExist;
+  final bool fromDashboard;
+
+  const SupportTicketScreen({
+    super.key,
+    this.isBackButtonExist = true,
+    this.fromDashboard = false,
+  });
   @override
   State<SupportTicketScreen> createState() => _SupportTicketScreenState();
 }
@@ -37,7 +44,10 @@ class _SupportTicketScreenState extends State<SupportTicketScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: getTranslated('support_ticket', context)),
+      appBar: CustomAppBar(
+        title: getTranslated('inbox', context),
+        isBackButtonExist: widget.isBackButtonExist && !widget.fromDashboard,
+      ),
       bottomNavigationBar: Provider.of<AuthController>(context, listen: false).isLoggedIn() ?
       SizedBox(height: 70, child: Padding(
         padding: const EdgeInsets.all(Dimensions.paddingSizeEight),
@@ -61,13 +71,32 @@ class _SupportTicketScreenState extends State<SupportTicketScreen> {
           support.supportTicketList!.isNotEmpty?
           RefreshIndicator(
             onRefresh: () async => await support.getSupportTicketList(),
-            child: ListView.separated(
-              itemCount: support.supportTicketList!.length,
-              itemBuilder: (context, index) => SupportTicketWidget(supportTicketModel: support.supportTicketList![index], index: index),
+            child: Builder(builder: (context) {
+              final pendingActivations = support.supportTicketList!.where((ticket) =>
+                ticket.purpose == 'account_activation' && ticket.reviewStatus != 'approved').toList();
+              final pendingActivation = pendingActivations.isEmpty ? null : pendingActivations.first;
+              final bannerOffset = pendingActivation == null ? 0 : 1;
+              return ListView.separated(
+              itemCount: support.supportTicketList!.length + bannerOffset,
+              itemBuilder: (context, index) {
+                if (pendingActivation != null && index == 0) {
+                  return Container(
+                    margin: const EdgeInsets.all(Dimensions.paddingSizeDefault),
+                    padding: const EdgeInsets.all(Dimensions.paddingSizeDefault),
+                    decoration: BoxDecoration(color: Colors.red.shade700, borderRadius: BorderRadius.circular(8)),
+                    child: Text(getTranslated('customer_activation_support_message', context) ??
+                      'Please complete account activation with support.', style: const TextStyle(color: Colors.white)),
+                  );
+                }
+                final ticketIndex = index - bannerOffset;
+                return SupportTicketWidget(supportTicketModel: support.supportTicketList![ticketIndex], index: ticketIndex);
+              },
               separatorBuilder: (BuildContext context, int index) => const SizedBox(height: Dimensions.paddingSizeExtraSmall),
-            ),
+            );}),
           ) : const NoInternetOrDataScreenWidget(isNoInternet: false, icon: Images.noTicket,
-            message: 'no_ticket_created') : const SupportTicketShimmer() : NotLoggedInWidget(fromPage: RouterHelper.supportTicketScreen,
+            message: 'no_ticket_created') : const SupportTicketShimmer() : NotLoggedInWidget(
+            message: getTranslated('to_communicate_with_vendors', context),
+            fromPage: widget.fromDashboard ? '${RouterHelper.dashboardScreen}?page=inbox' : RouterHelper.supportTicketScreen,
             onLoginSuccess: () {
               RouterHelper.getSupportTicketRoute(action: RouteAction.pushReplacement);
             }

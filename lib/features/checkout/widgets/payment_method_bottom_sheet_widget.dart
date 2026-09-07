@@ -1,302 +1,137 @@
-
 import 'package:flutter/material.dart';
-import 'package:flutter_sixvalley_ecommerce/common/basewidget/no_internet_screen_widget.dart';
-import 'package:flutter_sixvalley_ecommerce/features/checkout/controllers/checkout_controller.dart';
-import 'package:flutter_sixvalley_ecommerce/features/checkout/widgets/change_amount_widget.dart';
-import 'package:flutter_sixvalley_ecommerce/features/offline_payment/domain/models/offline_payment_model.dart';
-import 'package:flutter_sixvalley_ecommerce/features/splash/domain/models/config_model.dart';
-import 'package:flutter_sixvalley_ecommerce/localization/language_constrants.dart';
 import 'package:flutter_sixvalley_ecommerce/features/auth/controllers/auth_controller.dart';
-import 'package:flutter_sixvalley_ecommerce/localization/controllers/localization_controller.dart';
-import 'package:flutter_sixvalley_ecommerce/features/splash/controllers/splash_controller.dart';
-import 'package:flutter_sixvalley_ecommerce/main.dart';
-import 'package:flutter_sixvalley_ecommerce/utill/custom_themes.dart';
-import 'package:flutter_sixvalley_ecommerce/utill/dimensions.dart';
-import 'package:flutter_sixvalley_ecommerce/utill/images.dart';
 import 'package:flutter_sixvalley_ecommerce/common/basewidget/custom_button_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/checkout/widgets/custom_check_box_widget.dart';
+import 'package:flutter_sixvalley_ecommerce/common/basewidget/no_internet_screen_widget.dart';
+import 'package:flutter_sixvalley_ecommerce/features/checkout/controllers/checkout_controller.dart';
+import 'package:flutter_sixvalley_ecommerce/features/offline_payment/domain/models/offline_payment_model.dart';
+import 'package:flutter_sixvalley_ecommerce/features/splash/controllers/splash_controller.dart';
+import 'package:flutter_sixvalley_ecommerce/features/splash/domain/models/config_model.dart';
+import 'package:flutter_sixvalley_ecommerce/localization/language_constrants.dart';
+import 'package:flutter_sixvalley_ecommerce/utill/custom_themes.dart';
+import 'package:flutter_sixvalley_ecommerce/utill/dimensions.dart';
 import 'package:provider/provider.dart';
 
-class PaymentMethodBottomSheetWidget extends StatefulWidget {
+/// Purchase balance, online payment and offline transfer share checkout consent.
+class PaymentMethodBottomSheetWidget extends StatelessWidget {
   final bool onlyDigital;
-  const PaymentMethodBottomSheetWidget({super.key, required this.onlyDigital,});
-  @override
-  PaymentMethodBottomSheetWidgetState createState() => PaymentMethodBottomSheetWidgetState();
-}
-class PaymentMethodBottomSheetWidgetState extends State<PaymentMethodBottomSheetWidget> {
-  final TextEditingController changeAmountTextController = TextEditingController();
-  final ConfigModel? configModel = Provider.of<SplashController>(Get.context!, listen: false).configModel;
-  CheckoutController checkoutController = Provider.of<CheckoutController>(Get.context!, listen: false);
-
-  @override
-  void initState() {
-    changeAmountTextController.text = '${Provider.of<CheckoutController>(context, listen: false).cashChangesAmount ?? ''}';
-    if((configModel?.cashOnDelivery ?? false) && !widget.onlyDigital && !checkoutController.isCODChecked && false) {
-      checkoutController.setOfflineChecked('cod', notify: false);
-    }
-    super.initState();
-  }
-
+  const PaymentMethodBottomSheetWidget({super.key, required this.onlyDigital});
 
   @override
   Widget build(BuildContext context) {
-
-    final ConfigModel? configModel = Provider.of<SplashController>(context, listen: false).configModel;
-    final bool isLtr = Provider.of<LocalizationController>(context, listen: false).isLtr;
+    final configModel = Provider.of<SplashController>(context, listen: false).configModel;
 
     return Consumer<CheckoutController>(
       builder: (context, checkoutController, _) {
-        return PopScope(
-          onPopInvokedWithResult: (_, __){
-            if(checkoutController.isCODChecked) {
-              checkoutController.onChangeCashChangesAmount(double.tryParse(changeAmountTextController.text));
-            }else {
-              checkoutController.onChangeCashChangesAmount(null);
+        final hasOnline = (configModel?.digitalPayment ?? false) && (configModel?.paymentMethods?.isNotEmpty ?? false);
+        final hasWallet = configModel?.walletStatus == 1 && context.read<AuthController>().isLoggedIn();
+        final hasOffline = !onlyDigital && configModel?.offlinePayment != null && (checkoutController.offlinePaymentModel?.offlineMethods?.isNotEmpty ?? false);
 
-            }
-          },
-          child: Container(constraints : BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7,
-              minHeight: MediaQuery.of(context).size.height * 0.5 ),
-            padding: const EdgeInsets.all(Dimensions.paddingSizeDefault),
-            decoration: BoxDecoration(color: Theme.of(context).highlightColor,
-                borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20))),
-            child: Column(mainAxisSize: MainAxisSize.min,
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(mainAxisSize: MainAxisSize.min, children: [
-                      const SizedBox(height: Dimensions.paddingSizeSmall),
-                      Padding(padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeDefault),
-                        child: Center(child: Container(width: 35,height: 4,decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(Dimensions.paddingSizeDefault),
-                          color: Theme.of(context).hintColor.withValues(alpha:.5))))),
-
-                      Padding(padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeSmall),
-                        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-
-                          Text(
-                            getTranslated('choose_payment_method', context)??'',
-                            style: titilliumSemiBold.copyWith(fontSize: Dimensions.fontSizeDefault, color: Theme.of(context).textTheme.bodyLarge?.color),
+        return Container(
+          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * .7),
+          padding: const EdgeInsets.all(Dimensions.paddingSizeDefault),
+          decoration: BoxDecoration(
+            color: Theme.of(context).highlightColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              Container(width: 35, height: 4, decoration: BoxDecoration(color: Theme.of(context).hintColor.withValues(alpha: .5), borderRadius: BorderRadius.circular(8))),
+              const SizedBox(height: Dimensions.paddingSizeDefault),
+              Row(children: [
+                Text(getTranslated('choose_payment_method', context) ?? '', style: titilliumSemiBold.copyWith(fontSize: Dimensions.fontSizeDefault)),
+                const SizedBox(width: Dimensions.paddingSizeExtraSmall),
+                Expanded(child: Text(getTranslated('click_one_of_the_option_below', context) ?? '', style: textRegular.copyWith(color: Theme.of(context).hintColor, fontSize: Dimensions.fontSizeSmall))),
+              ]),
+              const SizedBox(height: Dimensions.paddingSizeDefault),
+              Expanded(
+                child: (hasOnline || hasOffline || hasWallet)
+                    ? SingleChildScrollView(
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          if (hasWallet) ListTile(
+                            leading: const Icon(Icons.account_balance_wallet_outlined),
+                            title: Text(getTranslated('purchase_wallet', context) ?? ''),
+                            subtitle: Text(getTranslated('purchase_wallet_only_notice', context) ?? ''),
+                            trailing: checkoutController.isWalletChecked ? Icon(Icons.check_circle, color: Theme.of(context).primaryColor) : const Icon(Icons.circle_outlined),
+                            onTap: checkoutController.selectPurchaseWallet,
                           ),
-
-                          Expanded(child: Padding(padding: const EdgeInsets.only(left: Dimensions.paddingSizeExtraSmall),
-                            child: Text(
-                              '${getTranslated('click_one_of_the_option_below', context)}',
-                              style: textRegular.copyWith(color: Theme.of(context).hintColor, fontSize: Dimensions.fontSizeSmall),
-                            ),
-                          )),
+                          if (hasOnline) _onlineMethods(context),
+                          if (hasOnline && hasOffline) const SizedBox(height: Dimensions.paddingSizeDefault),
+                          if (hasOffline) _offlineMethods(context, checkoutController),
                         ]),
-                      ),
-
-
-                        _isPaymentMethodsAvailable(Get.context!, checkoutController.offlinePaymentModel?.offlineMethods) ?
-                        Column(crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min, children: [
-
-                            Row(children: [
-                              if((configModel?.cashOnDelivery ?? false) && !widget.onlyDigital && false) Expanded(child: CustomButton(
-                                isBorder: true,
-                                leftIcon: Images.cod,
-                                backgroundColor: checkoutController.isCODChecked? Theme.of(context).primaryColor : Theme.of(context).cardColor,
-                                textColor:  checkoutController.isCODChecked? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
-                                fontSize: Dimensions.fontSizeSmall,
-                                onTap: () => checkoutController.setOfflineChecked('cod'),
-                                buttonText: '${getTranslated('cash_on_delivery', context)}',
-                              )),
-                              const SizedBox(width: Dimensions.paddingSizeDefault),
-
-                              if(configModel?.walletStatus == 1 && Provider.of<AuthController>(context, listen: false).isLoggedIn())
-                                Expanded(child: CustomButton(
-                                  onTap: () => checkoutController.setOfflineChecked('wallet'),
-                                  isBorder: true,
-                                  leftIcon: Images.payWallet,
-                                  backgroundColor: checkoutController.isWalletChecked ? Theme.of(context).primaryColor : Theme.of(context).cardColor,
-                                  textColor:  checkoutController.isWalletChecked? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
-                                  fontSize: Dimensions.fontSizeSmall,
-                                  buttonText: '${getTranslated('pay_via_wallet', context)}',
-                                )),
-                            ]),
-
-
-                            ///change amount
-                            ChangeAmountWidget(changeAmountTextController: changeAmountTextController),
-
-
-                            if((configModel?.digitalPayment ?? false) && (configModel?.paymentMethods?.isNotEmpty ?? false) && !checkoutController.isCODChecked)
-                              SizedBox(height: Dimensions.paddingSizeSmall),
-
-
-                            if((configModel?.digitalPayment ?? false) && (configModel?.paymentMethods?.isNotEmpty ?? false))
-                            Container(
-                              padding: const EdgeInsets.all(Dimensions.paddingSizeDefault),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).cardColor,
-                                border: Border.all(width: 1, color: Theme.of(context).hintColor.withValues(alpha: .125),
-                                ),
-                                borderRadius: BorderRadius.circular(Dimensions.paddingSizeExtraSmall),
-                              ),
-
-                              child: Column(
-                                children: [
-                                  if((configModel?.digitalPayment ?? false) && (configModel?.paymentMethods?.isNotEmpty ?? false))
-                                    Padding(
-                                      padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeSmall, top: Dimensions.paddingSizeDefault),
-                                      child: Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text('${getTranslated('pay_via_online', context)}', style: titilliumBold.copyWith(color: Theme.of(context).textTheme.bodyLarge?.color)),
-                                        ],
-                                      ),
-                                    ),
-
-                                  if((configModel?.digitalPayment ?? false) && (configModel?.paymentMethods?.isNotEmpty ?? false))
-                                    Consumer<SplashController>(builder: (context, configProvider,_) {
-                                      return ListView.separated(
-                                        padding: EdgeInsets.zero,
-                                        itemCount: configProvider.configModel?.paymentMethods?.length??0,
-                                        shrinkWrap: true,
-                                        physics: const NeverScrollableScrollPhysics(),
-                                        itemBuilder: (context, index){
-                                          return  CustomCheckBoxWidget(index: index,
-                                            padding: 0,
-                                            icon: '${configProvider.configModel?.paymentMethodImagePath}/'
-                                                '${configProvider.configModel?.paymentMethods?[index].additionalDatas?.gatewayImage??''}',
-                                            name: configProvider.configModel!.paymentMethods![index].keyName!,
-                                            title: configProvider.configModel!.paymentMethods![index].additionalDatas?.gatewayTitle??'',
-                                          );
-                                        },
-                                        separatorBuilder: (context, index) {
-                                          return SizedBox(height: Dimensions.paddingSizeSmall);
-                                        },
-                                      );
-                                    }),
-                                ],
-                              ),
-                            ),
-
-                            if((configModel?.digitalPayment ?? false) && (configModel?.paymentMethods?.isNotEmpty ?? false))
-                            SizedBox(height: Dimensions.paddingSizeSmall),
-
-
-
-                            if(configModel?.offlinePayment != null && (checkoutController.offlinePaymentModel?.offlineMethods?.isNotEmpty ?? false))
-                              Container(
-                                  decoration: BoxDecoration(
-                                    color: checkoutController.isOfflineChecked?Theme.of(context).primaryColor.withValues(alpha:.15): null,
-                                    borderRadius: BorderRadius.circular(Dimensions.paddingSizeSmall),
-                                  ),
-                                  child: Column(children: [
-
-                                    InkWell(
-                                      onTap: () {
-                                        if(checkoutController.offlinePaymentModel?.offlineMethods != null &&
-                                            checkoutController.offlinePaymentModel!.offlineMethods!.isNotEmpty){
-                                          checkoutController.setOfflineChecked('offline');
-                                        }
-                                      },
-                                      child: Padding(padding: const EdgeInsets.all(8.0), child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeSmall),
-                                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(Dimensions.paddingSizeExtraSmall)),
-                                        child: Row(children: [
-                                          Theme(
-                                            data: Theme.of(context).copyWith(unselectedWidgetColor: Theme.of(context).primaryColor.withValues(alpha:.25)),
-                                            child: Checkbox(
-                                              visualDensity: VisualDensity.compact,
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Dimensions.paddingSizeExtraLarge)),
-                                              checkColor: Colors.white,
-                                              value: checkoutController.isOfflineChecked, activeColor: Colors.green,
-                                              onChanged: (bool? isChecked){
-                                                if(checkoutController.offlinePaymentModel?.offlineMethods?.isNotEmpty ?? false){
-                                                  checkoutController.setOfflineChecked('offline');
-                                                }},
-                                            ),
-                                          ),
-
-                                          Text('${getTranslated('pay_offline', context)}', style: textBold.copyWith(color: Theme.of(context).textTheme.bodyLarge?.color)),
-                                        ]),
-                                      )),
-                                    ),
-
-
-                                    if((checkoutController.offlinePaymentModel?.offlineMethods?.isNotEmpty ?? false) && checkoutController.isOfflineChecked)
-                                      Padding(
-                                        padding: EdgeInsets.only(
-                                          left: isLtr ? Dimensions.paddingSizeDefault : 0,
-                                          bottom: Dimensions.paddingSizeDefault,
-                                          right: isLtr ? 0 : Dimensions.paddingSizeDefault,
-                                          top: Dimensions.paddingSizeSmall,
-                                        ),
-                                        child: SizedBox(height: 40, child: ListView.builder(
-                                          padding: EdgeInsets.zero,
-                                          shrinkWrap: true,
-                                          scrollDirection: Axis.horizontal,
-                                          itemCount: checkoutController.offlinePaymentModel!.offlineMethods!.length,
-                                          itemBuilder: (context, index){
-                                            return InkWell(
-                                              onTap: (){
-                                                if(checkoutController.offlinePaymentModel?.offlineMethods?.isNotEmpty ?? false) {
-                                                  checkoutController.setOfflinePaymentMethodSelectedIndex(index);
-                                                }
-                                              },
-                                              child: Padding(
-                                                padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeExtraSmall),
-                                                child: Container(
-                                                  decoration: BoxDecoration(
-                                                    color: Theme.of(context).cardColor,
-                                                    borderRadius: BorderRadius.circular(Dimensions.paddingSizeExtraSmall),
-                                                    border: checkoutController.offlineMethodSelectedIndex == index
-                                                        ? Border.all(color: Theme.of(context).primaryColor, width: 1)
-                                                        : Border.all(color: Theme.of(context).primaryColor.withValues(alpha:.5), width: .25),
-                                                  ),
-                                                  child: Padding(
-                                                    padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeDefault),
-                                                    child: Center(child: Text(checkoutController.offlinePaymentModel?.offlineMethods?[index].methodName ??'')),
-                                                  ),
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        )),
-                                      ),
-                                  ])),
-
-
-                          ],
-                        ) : const NoInternetOrDataScreenWidget(isNoInternet: false, message: 'no_payment_method_available_right_now',),
-
-                    ]),
-                  ),
-                ),
-
-                CustomButton(
-                  buttonText: '${getTranslated('save', context)}',
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    if((configModel?.cashOnDelivery ?? false) && !widget.onlyDigital) {
-                      checkoutController.updatePaymentSelection();
-                    }
-                  },
-                ),
-
-              ],
-            ),
+                      )
+                    : const NoInternetOrDataScreenWidget(isNoInternet: false, message: 'no_payment_method_available_right_now'),
+              ),
+              CustomButton(buttonText: getTranslated('save', context) ?? '', onTap: () => Navigator.of(context).pop()),
+            ],
           ),
         );
-      }
+      },
+    );
+  }
+
+  Widget _onlineMethods(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(Dimensions.paddingSizeDefault),
+      decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(Dimensions.paddingSizeExtraSmall)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(getTranslated('pay_via_online', context) ?? '', style: titilliumBold.copyWith(color: Theme.of(context).textTheme.bodyLarge?.color)),
+        const SizedBox(height: Dimensions.paddingSizeSmall),
+        Consumer<SplashController>(builder: (context, configProvider, _) {
+          final methods = configProvider.configModel?.paymentMethods ?? [];
+          return ListView.separated(
+            padding: EdgeInsets.zero,
+            itemCount: methods.length,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemBuilder: (context, index) => CustomCheckBoxWidget(
+              index: index,
+              padding: 0,
+              icon: '${configProvider.configModel?.paymentMethodImagePath}/${methods[index].additionalDatas?.gatewayImage ?? ''}',
+              name: methods[index].keyName ?? '',
+              title: methods[index].additionalDatas?.gatewayTitle ?? '',
+            ),
+            separatorBuilder: (_, __) => const SizedBox(height: Dimensions.paddingSizeSmall),
+          );
+        }),
+      ]),
+    );
+  }
+
+  Widget _offlineMethods(BuildContext context, CheckoutController checkoutController) {
+    final methods = checkoutController.offlinePaymentModel!.offlineMethods!;
+    return Container(
+      decoration: BoxDecoration(
+        color: checkoutController.isOfflineChecked ? Theme.of(context).primaryColor.withValues(alpha: .15) : Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(Dimensions.paddingSizeSmall),
+      ),
+      child: Column(children: [
+        CheckboxListTile(
+          value: checkoutController.isOfflineChecked,
+          activeColor: Colors.green,
+          onChanged: (_) => checkoutController.setOfflineChecked('offline'),
+          title: Text(getTranslated('pay_offline', context) ?? '', style: textBold.copyWith(color: Theme.of(context).textTheme.bodyLarge?.color)),
+          controlAffinity: ListTileControlAffinity.leading,
+        ),
+        if (checkoutController.isOfflineChecked)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(Dimensions.paddingSizeSmall, 0, Dimensions.paddingSizeSmall, Dimensions.paddingSizeDefault),
+            child: Wrap(
+              spacing: Dimensions.paddingSizeSmall,
+              runSpacing: Dimensions.paddingSizeSmall,
+              children: List.generate(methods.length, (index) => ChoiceChip(
+                label: Text(methods[index].methodName ?? ''),
+                selected: checkoutController.offlineMethodSelectedIndex == index,
+                onSelected: (_) => checkoutController.setOfflinePaymentMethodSelectedIndex(index),
+              )),
+            ),
+          ),
+      ]),
     );
   }
 }
 
-
-
-bool _isPaymentMethodsAvailable(BuildContext context, List<OfflineMethods>? offlineMethods){
-  final ConfigModel? configModel = Provider.of<SplashController>(context, listen: false).configModel;
-
-  bool isCashOnDeliveryOn = configModel?.cashOnDelivery ?? false;
-  bool isWalletOn = configModel?.walletStatus == 1 && Provider.of<AuthController>(context, listen: false).isLoggedIn();
-  bool isOnlinePaymentMethodsOn = configModel?.paymentMethods?.isNotEmpty ?? false;
-  bool isOfflinePaymentMethodsOn = offlineMethods?.isNotEmpty ?? false;
-
-  return isCashOnDeliveryOn || isWalletOn || isOnlinePaymentMethodsOn || isOfflinePaymentMethodsOn;
+bool isPrepaidMethodAvailable(ConfigModel? configModel, List<OfflineMethods>? offlineMethods, bool onlyDigital) {
+  return ((configModel?.digitalPayment ?? false) && (configModel?.paymentMethods?.isNotEmpty ?? false))
+      || (!onlyDigital && configModel?.offlinePayment != null && (offlineMethods?.isNotEmpty ?? false));
 }
-

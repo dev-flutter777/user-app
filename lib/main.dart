@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:app_links/app_links.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -13,6 +13,7 @@ import 'package:flutter_sixvalley_ecommerce/features/auth/controllers/facebook_l
 import 'package:flutter_sixvalley_ecommerce/features/auth/controllers/google_login_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/banner/controllers/banner_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/checkout/controllers/checkout_controller.dart';
+import 'package:flutter_sixvalley_ecommerce/features/order_insurance/controllers/customer_order_insurance_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/compare/controllers/compare_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/contact_us/controllers/contact_us_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/deal/controllers/featured_deal_controller.dart';
@@ -72,29 +73,12 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   if(Firebase.apps.isEmpty) {
-    if(Platform.isAndroid) {
-      try{
-        /// todo you need to configure that firebase Option with your own firebase to run your app
-        await Firebase.initializeApp(
-          name: 'your_project_name',
-          options: const FirebaseOptions(
-            apiKey: "current_key here",
-            projectId: "project_id here",
-            messagingSenderId: "project_number here",
-            appId: "mobilesdk_app_id here"
-          )
-        );
-      } finally {
-        await Firebase.initializeApp();
-      }
-    }else{
-      await Firebase.initializeApp();
-    }
+    await Firebase.initializeApp();
   }
 
 
 
-  await FlutterDownloader.initialize(debug: true, ignoreSsl: true);
+  await FlutterDownloader.initialize(debug: kDebugMode, ignoreSsl: false);
   await di.init();
 
   flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.requestNotificationsPermission();
@@ -143,6 +127,7 @@ Future<void> main() async {
       ChangeNotifierProvider(create: (context) => di.sl<WalletController>()),
       ChangeNotifierProvider(create: (context) => di.sl<CompareController>()),
       ChangeNotifierProvider(create: (context) => di.sl<CheckoutController>()),
+      ChangeNotifierProvider(create: (context) => di.sl<CustomerOrderInsuranceController>()),
       ChangeNotifierProvider(create: (context) => di.sl<LoyaltyPointController>()),
       ChangeNotifierProvider(create: (context) => di.sl<LocationController>()),
       ChangeNotifierProvider(create: (context) => di.sl<ContactUsController>()),

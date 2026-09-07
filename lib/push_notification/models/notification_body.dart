@@ -23,7 +23,7 @@ class NotificationBody {
   });
 
   NotificationBody.fromJson(Map<String, dynamic> json) {
-    orderId = json['order_id'];
+    orderId = int.tryParse('${json['order_id'] ?? ''}');
     type = json['type'];
     messageKey = json['message_key'];
     title = json['title'];

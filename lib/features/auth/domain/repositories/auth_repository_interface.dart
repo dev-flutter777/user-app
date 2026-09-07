@@ -7,6 +7,8 @@ abstract class AuthRepoInterface<T> implements RepositoryInterface{
 
   Future<ApiResponseModel> registration(Map<String, dynamic> body);
 
+  Future<ApiResponseModel> getRegistrationPolicies();
+
   Future<ApiResponseModel> login(String? userInput, String? password, String? type);
 
   Future<ApiResponseModel> logout();

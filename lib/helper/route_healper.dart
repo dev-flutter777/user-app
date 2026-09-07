@@ -1,3 +1,4 @@
+import 'package:flutter_sixvalley_ecommerce/features/order_insurance/screens/customer_order_insurance_screen.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_sixvalley_ecommerce/data/model/image_full_url.dart';
@@ -75,7 +76,6 @@ import 'package:flutter_sixvalley_ecommerce/features/auth/screens/auth_screen.da
 import 'package:flutter_sixvalley_ecommerce/features/auth/screens/forget_password_screen.dart';
 import 'package:flutter_sixvalley_ecommerce/features/auth/screens/reset_password_screen.dart';
 import 'package:flutter_sixvalley_ecommerce/features/cart/screens/cart_screen.dart';
-import 'package:flutter_sixvalley_ecommerce/features/chat/screens/chat_screen.dart';
 import 'package:flutter_sixvalley_ecommerce/features/chat/screens/inbox_screen.dart';
 import 'package:flutter_sixvalley_ecommerce/features/order_details/widgets/order_offline_payment_screen.dart' as order_offline;
 import 'package:go_router/go_router.dart';
@@ -87,6 +87,7 @@ import 'package:provider/provider.dart';
 enum RouteAction {push, pushReplacement, pushNamedAndRemoveUntil}
 
 class RouterHelper {
+  static const String customerOrderInsuranceScreen = '/customer-order-insurance';
   static const String initial = '/';
   static const String trackOrder = '/track-order';
   static const String signUpAuth = '/referral-login';
@@ -280,23 +281,7 @@ class RouterHelper {
     int? totalProduct,
     String? rating,
   }) {
-    final params = <String, String>{};
-    if (sellerId != null) params['sellerId'] = sellerId.toString();
-    if (temporaryClose != null) params['temporaryClose'] = temporaryClose.toString();
-    if (vacationStatus != null) params['vacationStatus'] = vacationStatus.toString();
-    if (vacationEndDate != null) params['vacationEndDate'] = vacationEndDate.toIso8601String();
-    if (vacationStartDate != null) params['vacationStartDate'] = vacationStartDate.toIso8601String();
-    if (vacationDurationType != null) params['vacationDurationType'] = vacationDurationType.toString();
-    if (name != null) params['name'] = Uri.encodeComponent(name);
-    if (banner != null) params['banner'] = Uri.encodeComponent(banner);
-    if (image != null) params['image'] = Uri.encodeComponent(image);
-    if (fromMore != null) params['fromMore'] = fromMore.toString();
-    if (totalReview != null) params['totalReview'] = totalReview.toString();
-    if (totalProduct != null) params['totalProduct'] = totalProduct.toString();
-    if (rating != null) params['rating'] = rating;
-    if (slug != null) params['slug'] = slug;
-    final query = params.entries.map((e) => '${e.key}=${e.value}').join('&');
-    return _navigateRoute('$topSellerScreen${query.isNotEmpty ? '?$query' : ''}', route: action);
+    return getDashboardRoute(action: action);
   }
   static String getOnboardingRoute({RouteAction? action, Color? indicatorColor, Color? selectedIndicatorColor}) {
     final params = <String, String>{};
@@ -652,6 +637,11 @@ class RouterHelper {
     final query = '?${params.entries.map((e) => '${e.key}=${e.value}').join('&')}';
     return _navigateRoute('$orderDetailsScreen$query', route: action);
   }
+
+  static String getCustomerOrderInsuranceRoute({
+    RouteAction? action,
+    required int orderId,
+  }) => _navigateRoute('$customerOrderInsuranceScreen?orderId=$orderId', route: action);
 
   static String getProductImageScreenRoute({
     RouteAction? action,
@@ -1145,19 +1135,7 @@ return AddNewAddressScreen(
       GoRoute(path: categoryScreen, builder: (context, state) => const CategoryScreen()),
       GoRoute(
         path: chatScreen,
-        builder: (context, state) {
-          final qp = state.uri.queryParameters;
-          return ChatScreen(
-            id: qp['id'] != null ? int.tryParse(qp['id']!) : null,
-            name: qp['name'] != null ? Uri.decodeComponent(qp['name']!) : '',
-            isDelivery: qp['isDelivery'] == 'true',
-            image: qp['image'] != null ? Uri.decodeComponent(qp['image']!) : null,
-            phone: qp['phone'] != null ? Uri.decodeComponent(qp['phone']!) : null,
-            userType: qp['userType'] != null ? int.tryParse(qp['userType']!) : null,
-            isShopOnVacation: qp['isShopOnVacation'] == 'true',
-            isShopTemporaryClosed: qp['isShopTemporaryClosed'] == 'true',
-          );
-        },
+        builder: (context, state) => const SupportTicketScreen(),
       ),
 
       GoRoute(
@@ -1454,6 +1432,13 @@ return AddNewAddressScreen(
       GoRoute(
         path: allTopSellerScreen,
         redirect: (context, state) => dashboardScreen,
+      ),
+
+      GoRoute(
+        path: customerOrderInsuranceScreen,
+        builder: (context, state) => CustomerOrderInsuranceScreen(
+          orderId: int.tryParse(state.uri.queryParameters['orderId'] ?? '') ?? 0,
+        ),
       ),
 
       GoRoute(

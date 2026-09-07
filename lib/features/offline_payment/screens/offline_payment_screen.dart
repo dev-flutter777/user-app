@@ -10,7 +10,6 @@ import 'package:flutter_sixvalley_ecommerce/helper/price_converter.dart';
 import 'package:flutter_sixvalley_ecommerce/helper/velidate_check.dart';
 import 'package:flutter_sixvalley_ecommerce/localization/language_constrants.dart';
 import 'package:flutter_sixvalley_ecommerce/features/coupon/controllers/coupon_controller.dart';
-import 'package:flutter_sixvalley_ecommerce/features/splash/controllers/splash_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/utill/custom_themes.dart';
 import 'package:flutter_sixvalley_ecommerce/utill/dimensions.dart';
 import 'package:flutter_sixvalley_ecommerce/utill/images.dart';
@@ -25,16 +24,10 @@ class OfflinePaymentScreen extends StatefulWidget {
   final double payableAmount;
   final Function callback;
   
-  // 🟢 المتغيرات الجديدة اللي استقبلناها عشان الباقة
-  final String paymentType; 
-  final int? activationInvoiceId;
-
   const OfflinePaymentScreen({
     super.key, 
     required this.payableAmount, 
     required this.callback,
-    this.paymentType = 'order', // افتراضي أوردر منتجات عشان السلة متضربش
-    this.activationInvoiceId,
   });
 
   @override
@@ -228,9 +221,7 @@ class _OfflinePaymentScreenState extends State<OfflinePaymentScreen> {
                               couponProvider.discount.toString() : '0';
                               String addressId = checkoutProvider.addressIndex != null ? locationProvider.addressList![checkoutProvider.addressIndex!].id.toString() : '';
 
-                              String billingAddressId =  (Provider.of<SplashController>(context, listen: false).configModel!.billingInputByCustomer == 1)
-                                  ? !checkoutProvider.sameAsBilling ? locationProvider.addressList![checkoutProvider.billingAddressIndex!].id.toString()
-                                  : locationProvider.addressList![checkoutProvider.addressIndex!].id.toString() : '';
+                              const String billingAddressId = '';
 
 
 
@@ -243,8 +234,6 @@ class _OfflinePaymentScreenState extends State<OfflinePaymentScreen> {
                                 couponCode: couponCode,
                                 couponAmount: couponCodeAmount,
                                 isfOffline: true,
-                                paymentType: widget.paymentType,
-                                activationInvoiceId: widget.activationInvoiceId,
                               );
                             }
                           },

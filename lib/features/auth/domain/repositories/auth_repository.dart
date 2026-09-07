@@ -42,6 +42,16 @@ class AuthRepository implements AuthRepoInterface{
   }
 
   @override
+  Future<ApiResponseModel> getRegistrationPolicies() async {
+    try {
+      final response = await dioClient!.get(AppConstants.registrationPoliciesUri);
+      return ApiResponseModel.withSuccess(response);
+    } catch (e) {
+      return ApiResponseModel.withError(ApiErrorHandler.getMessage(e));
+    }
+  }
+
+  @override
   Future<ApiResponseModel> login(String? userInput, String? password, String? type) async {
     try {
       Response response = await dioClient!.post(AppConstants.loginUri,

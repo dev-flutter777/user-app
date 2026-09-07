@@ -41,6 +41,8 @@ class ProductDetailsModel {
   int? _currentStock;
   int? _minimumOrderQty;
   String? _details;
+  String? _productionDate;
+  String? _expiryDate;
   int? _freeShipping;
   String? _createdAt;
   String? _updatedAt;
@@ -374,6 +376,8 @@ class ProductDetailsModel {
   int? get currentStock => _currentStock;
   int? get minimumOrderQty => _minimumOrderQty;
   String? get details => _details;
+  String? get productionDate => _productionDate;
+  String? get expiryDate => _expiryDate;
   int? get freeShipping => _freeShipping;
   String? get createdAt => _createdAt;
   String? get updatedAt => _updatedAt;
@@ -500,6 +504,8 @@ class ProductDetailsModel {
     }
 
     _details = json['details'];
+    _productionDate = json['production_date']?.toString();
+    _expiryDate = json['expiry_date']?.toString();
     _freeShipping = json['free_shipping'];
     _createdAt = json['created_at'];
     _updatedAt = json['updated_at'];

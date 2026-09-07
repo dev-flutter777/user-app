@@ -42,11 +42,7 @@ class NotificationHelper {
           log("-----------tyyuuyypee88==>${payload.type}");
           log("=============Payload==>${load.payload}");
           if(payload.type == 'order') {
-            RouterHelper.getOrderDetailsScreenRoute(
-              action: RouteAction.pushReplacement,
-              orderId: payload.orderId!,
-              isNotification: true
-            );
+            _openOrderNotification(payload);
           } else if(payload.type == 'wallet') {
             RouterHelper.getWalletRoute(action: RouteAction.pushReplacement, isBackButtonExist: true);
           } else if(payload.type == 'chatting') {
@@ -130,11 +126,7 @@ class NotificationHelper {
         if(message.data.isNotEmpty) {
           NotificationBody notificationBody = convertNotification(message.data);
           if(notificationBody.type == 'order') {
-            RouterHelper.getOrderDetailsScreenRoute(
-              action: RouteAction.pushReplacement,
-              orderId: notificationBody.orderId!,
-              isNotification: true
-            );
+            _openOrderNotification(notificationBody);
 
           } else if(notificationBody.type == 'wallet') {
             RouterHelper.getWalletRoute(action: RouteAction.pushReplacement, isBackButtonExist: true);
@@ -268,7 +260,11 @@ class NotificationHelper {
     if(data['type'] == 'notification') {
       return NotificationBody(type: 'notification');
     }else if(data['type'] == 'order') {
-      return NotificationBody(type: 'order', orderId: int.parse(data['order_id']));
+      return NotificationBody(
+        type: 'order',
+        orderId: int.tryParse('${data['order_id']}'),
+        messageKey: data['message_key']?.toString() ?? data['body']?.toString(),
+      );
     }else if(data['type'] == 'wallet') {
       return NotificationBody(type: 'wallet');
     }else if(data['type'] == 'block') {
@@ -280,6 +276,26 @@ class NotificationHelper {
     } else {
       return NotificationBody(type: 'chatting', messageKey: data['message_key']);
     }
+  }
+
+  static void _openOrderNotification(NotificationBody body) {
+    if (body.orderId == null) {
+      RouterHelper.getNotificationRoute(action: RouteAction.pushReplacement, fromNotification: true);
+      return;
+    }
+    final key = body.messageKey ?? '';
+    if (key.startsWith('customer_insurance_') || key.startsWith('purchase_refund_')) {
+      RouterHelper.getCustomerOrderInsuranceRoute(
+        action: RouteAction.pushReplacement,
+        orderId: body.orderId!,
+      );
+      return;
+    }
+    RouterHelper.getOrderDetailsScreenRoute(
+      action: RouteAction.pushReplacement,
+      orderId: body.orderId!,
+      isNotification: true,
+    );
   }
 
 }

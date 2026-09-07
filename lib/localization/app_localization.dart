@@ -19,6 +19,9 @@ class AppLocalization {
   Future<void> load() async {
     String jsonStringValues = await rootBundle.loadString('assets/language/${locale.languageCode}.json');
     Map<String, dynamic> mappedJson = json.decode(jsonStringValues);
+    final insuranceLanguage = ['en', 'ar'].contains(locale.languageCode) ? locale.languageCode : 'en';
+    final insuranceJson = await rootBundle.loadString('assets/language/insurance_$insuranceLanguage.json');
+    mappedJson.addAll(json.decode(insuranceJson) as Map<String, dynamic>);
     _localizedValues = mappedJson.map((key, value) => MapEntry(key, value.toString()));
   }
 

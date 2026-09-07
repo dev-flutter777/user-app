@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_sixvalley_ecommerce/features/auth/controllers/auth_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/checkout/controllers/checkout_controller.dart';
+import 'package:flutter_sixvalley_ecommerce/features/order_insurance/controllers/customer_order_insurance_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/checkout/widgets/order_place_bottomsheet_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/helper/route_healper.dart';
 import 'package:flutter_sixvalley_ecommerce/localization/language_constrants.dart';
@@ -17,7 +18,8 @@ class DigitalPaymentScreen extends StatefulWidget {
   final String url;
   final bool fromWallet;
   final String orderId;
-  const DigitalPaymentScreen({super.key, required this.url, this.fromWallet = false, this.orderId = ''});
+  final bool isInsurancePayment;
+  const DigitalPaymentScreen({super.key, required this.url, this.fromWallet = false, this.orderId = '', this.isInsurancePayment = false});
 
   @override
   DigitalPaymentScreenState createState() => DigitalPaymentScreenState();
@@ -138,7 +140,7 @@ class DigitalPaymentScreenState extends State<DigitalPaymentScreen> {
     }
   }
 
-  void _handlePaymentResult(bool isSuccess, bool isFailed, bool isCancel, bool isNewUser, String? orderIds) {
+  Future<void> _handlePaymentResult(bool isSuccess, bool isFailed, bool isCancel, bool isNewUser, String? orderIds) async {
     bool isLoggedIn = Provider.of<AuthController>(context, listen: false).isLoggedIn();
 
     // if (Navigator.canPop(context)) {
@@ -146,14 +148,34 @@ class DigitalPaymentScreenState extends State<DigitalPaymentScreen> {
     // }
 
     if (isSuccess) {
-      if (widget.orderId.trim().isNotEmpty &&  orderIds == null) {
+      if (widget.isInsurancePayment && widget.orderId.trim().isNotEmpty) {
+        RouterHelper.getCustomerOrderInsuranceRoute(
+          orderId: int.parse(widget.orderId),
+          action: RouteAction.pushReplacement,
+        );
+      } else if (widget.orderId.trim().isNotEmpty &&  orderIds == null) {
         RouterHelper.getOrderDetailsScreenRoute(
           orderId: int .parse(widget.orderId),
           action: RouteAction.pushReplacement,
           isNotification: true
         );
       } else if (isLoggedIn && orderIds != null && orderIds.isNotEmpty) {
-        RouterHelper.getOrderScreenRoute(isBackButtonExist: true, action: RouteAction.push, fromPlaceOrder: true);
+        final firstOrderId = int.tryParse(orderIds.split(',').first.trim());
+        if (firstOrderId != null) {
+          final requiresInsurance = await Provider.of<CustomerOrderInsuranceController>(context, listen: false)
+              .load(firstOrderId);
+          if (requiresInsurance) {
+            RouterHelper.getCustomerOrderInsuranceRoute(orderId: firstOrderId, action: RouteAction.pushReplacement);
+          } else {
+            RouterHelper.getOrderDetailsScreenRoute(
+              orderId: firstOrderId,
+              action: RouteAction.pushReplacement,
+              isNotification: true,
+            );
+          }
+        } else {
+          RouterHelper.getOrderScreenRoute(isBackButtonExist: true, action: RouteAction.push, fromPlaceOrder: true);
+        }
       } else {
         RouterHelper.getDashboardRoute(action: RouteAction.pushReplacement, page: 'home');
       }

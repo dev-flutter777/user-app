@@ -76,6 +76,11 @@ class AuthService implements AuthServiceInterface{
   }
 
   @override
+  Future getRegistrationPolicies() {
+    return authRepoInterface.getRegistrationPolicies();
+  }
+
+  @override
   Future resendEmailOtp(String email, String token) {
     return authRepoInterface.resendEmailOtp(email, token);
   }

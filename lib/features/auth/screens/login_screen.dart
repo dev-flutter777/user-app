@@ -1,4 +1,3 @@
-import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sixvalley_ecommerce/common/basewidget/custom_button_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/common/basewidget/custom_textfield_widget.dart';
@@ -11,7 +10,6 @@ import 'package:flutter_sixvalley_ecommerce/features/auth/widgets/social_login_w
 import 'package:flutter_sixvalley_ecommerce/features/home/screens/aster_theme_home_screen.dart';
 import 'package:flutter_sixvalley_ecommerce/features/home/screens/home_screens.dart';
 import 'package:flutter_sixvalley_ecommerce/features/splash/controllers/splash_controller.dart';
-import 'package:flutter_sixvalley_ecommerce/features/splash/domain/models/config_model.dart';
 import 'package:flutter_sixvalley_ecommerce/helper/number_checker_helper.dart';
 import 'package:flutter_sixvalley_ecommerce/helper/route_healper.dart';
 import 'package:flutter_sixvalley_ecommerce/localization/controllers/localization_controller.dart';
@@ -50,7 +48,6 @@ class _LoginScreenState extends State<LoginScreen> {
     _emailPhoneController = TextEditingController();
     _passwordController = TextEditingController();
 
-    final ConfigModel configModel = Provider.of<SplashController>(context, listen: false).configModel!;
     final AuthController authController =  Provider.of<AuthController>(context, listen: false);
 
     authController.setIsLoading = false;
@@ -59,14 +56,14 @@ class _LoginScreenState extends State<LoginScreen> {
     authController.toggleIsNumberLoginScreenText(value: false, isUpdate: false);
 
 
-    countryCode = CountryCode.fromCountryCode(configModel.countryCode!).dialCode;
+    countryCode = '+20';
 
     if(userData != null) {
       if(userData.email != null) {
         _emailPhoneController?.text = userData.email ?? '';
       } else if (userData.phoneNumber != null) {
         authController.toggleIsNumberLoginScreenText(isUpdate: false);
-        countryCode = userData.countryCode ?? '';
+        countryCode = '+20';
         _emailPhoneController?.text = userData.phoneNumber ?? '';
       }
           _passwordController!.text = userData.password ?? '';
@@ -201,11 +198,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                     selector: (context, authProvider) => authProvider.isNumberLoginScreenText,
                                     builder: (_, isNumberLogin, ___) {
                                       return CustomTextFieldWidget(
-                                        countryDialCode: isNumberLogin ? countryCode : null,
-                                        showCodePicker: isNumberLogin,
-                                        onCountryChanged: (CountryCode value) {
-                                          countryCode = value.dialCode;
-                                        },
+                                        countryDialCode: isNumberLogin ? '+20' : null,
+                                        showCodePicker: false,
 
                                         onChanged: (String text){
                                           final numberRegExp = RegExp(r'^[+]?[0-9]+$');

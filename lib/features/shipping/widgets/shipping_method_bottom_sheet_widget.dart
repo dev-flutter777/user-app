@@ -104,16 +104,29 @@ class ShippingMethodBottomSheetWidgetState extends State<ShippingMethodBottomShe
                                   selectedIndex = index;
                                 });
                               },
-                              child: Padding(padding: const EdgeInsets.all(8.0),
+                              child: Padding(padding: const EdgeInsets.all(12.0),
                                 child: Row(children: [
                                   selectedIndex == index?
                                   Icon(Icons.radio_button_checked, color: Theme.of(context).primaryColor): Icon(Icons.circle_outlined,
                                     color: Theme.of(context).colorScheme.tertiaryContainer),
                                   const SizedBox(width: Dimensions.paddingSizeSmall),
-                                  Expanded(child: Text('${shippingController.shippingList![widget.sellerIndex].shippingMethodList![index].title}'
-                                      ' (Duration ${shippingController.shippingList![widget.sellerIndex].shippingMethodList![index].duration})',
-                                    style: textRegular.copyWith(color: Theme.of(context).textTheme.bodyLarge?.color),
+                                  Icon(
+                                    shippingController.shippingList![widget.sellerIndex].shippingMethodList![index].optionKey == 'sigma'
+                                      ? Icons.bolt_rounded : Icons.local_shipping_outlined,
+                                    color: Theme.of(context).primaryColor,
                                   ),
+                                  const SizedBox(width: Dimensions.paddingSizeSmall),
+                                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                    Text('${shippingController.shippingList![widget.sellerIndex].shippingMethodList![index].title}',
+                                      style: textBold.copyWith(color: Theme.of(context).textTheme.bodyLarge?.color)),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      shippingController.shippingList![widget.sellerIndex].shippingMethodList![index].estimatedLabel
+                                        ?? shippingController.shippingList![widget.sellerIndex].shippingMethodList![index].duration
+                                        ?? '',
+                                      style: textRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).hintColor),
+                                    ),
+                                  ]),
                                   ),
                                   const SizedBox(width: Dimensions.paddingSizeSmall),
 

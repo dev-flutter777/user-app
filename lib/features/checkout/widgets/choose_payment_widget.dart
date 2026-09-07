@@ -27,6 +27,11 @@ class ChoosePaymentWidget extends StatelessWidget {
                 boxShadow: [BoxShadow(color: Theme.of(context).hintColor.withValues(alpha:0.2), spreadRadius:3, blurRadius: 3)],
               ),
               child: Column(crossAxisAlignment:CrossAxisAlignment.start, children: [
+                if (orderProvider.isWalletChecked) ListTile(
+                  leading: const Icon(Icons.account_balance_wallet_outlined),
+                  title: Text(getTranslated('purchase_wallet', context) ?? ''),
+                  subtitle: Text(getTranslated('purchase_wallet_only_notice', context) ?? ''),
+                ),
                 SizedBox(height: Dimensions.paddingSizeDefault),
 
                 Padding(
@@ -57,12 +62,12 @@ class ChoosePaymentWidget extends StatelessWidget {
                 ),
                 const SizedBox(height: Dimensions.paddingSizeDefault),
 
-                if(orderProvider.isCODChecked  ||  orderProvider.isOfflineChecked ||  orderProvider.isWalletChecked || (orderProvider.paymentMethodIndex != -1))
+                if(orderProvider.isOfflineChecked || (orderProvider.paymentMethodIndex != -1))
                   SizedBox(height: 1, child: const Divider(thickness: .200)),
 
-                if(orderProvider.isCODChecked  ||  orderProvider.isOfflineChecked ||  orderProvider.isWalletChecked || (orderProvider.paymentMethodIndex != -1))
+                if(orderProvider.isOfflineChecked || (orderProvider.paymentMethodIndex != -1))
                   Visibility(
-                   visible: !orderProvider.isCODChecked,
+                   visible: true,
                     child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeDefault),
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -83,11 +88,8 @@ class ChoosePaymentWidget extends StatelessWidget {
                             style: textRegular.copyWith(color: Theme.of(context).textTheme.bodyLarge?.color),
                           ),
                         ),
-                      ],) : orderProvider.isCODChecked?
-                      Text(getTranslated('cash_on_delivery', context)??'', style: textRegular.copyWith(color: Theme.of(context).textTheme.bodyLarge?.color)) :orderProvider.isOfflineChecked?
-                      Text(getTranslated('offline_payment', context)??'', style: textRegular.copyWith(color: Theme.of(context).textTheme.bodyLarge?.color)) :orderProvider.isWalletChecked?
-                      Text(getTranslated('wallet_payment', context)??'', style: textRegular.copyWith(color: Theme.of(context).textTheme.bodyLarge?.color)
-                      ) :
+                      ],) : orderProvider.isOfflineChecked?
+                      Text(getTranslated('offline_payment', context)??'', style: textRegular.copyWith(color: Theme.of(context).textTheme.bodyLarge?.color)) :
 
                       InkWell(onTap: () => showModalBottomSheet(context: context,
                           isScrollControlled: true, backgroundColor: Colors.transparent,

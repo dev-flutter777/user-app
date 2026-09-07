@@ -57,12 +57,6 @@ class CheckoutService implements CheckoutServiceInterface{
   }
 
   @override
-  Future getActivationInvoice() async {
-    return await checkoutRepositoryInterface.getActivationInvoice();
-  }
+  Future getOrderInsuranceQuote(String? couponCode) async => checkoutRepositoryInterface.getOrderInsuranceQuote(couponCode);
 
-  @override
-  Future<dynamic> submitInvoicePayment(String endpoint, Map<String, dynamic> data) async {
-    return await checkoutRepositoryInterface.submitInvoicePayment(endpoint, data);
-  }
 }

@@ -87,10 +87,14 @@ class _OrderWidgetState extends State<OrderWidget> {
 
     return InkWell(
       onTap: () {
-        RouterHelper.getOrderDetailsScreenRoute(
-          action: RouteAction.push,
-          orderId: widget.orderModel!.id!,
-        );
+        if (_hasInsuranceAction(widget.orderModel?.commerceFlowStatus)) {
+          RouterHelper.getCustomerOrderInsuranceRoute(action: RouteAction.push, orderId: widget.orderModel!.id!);
+        } else {
+          RouterHelper.getOrderDetailsScreenRoute(
+            action: RouteAction.push,
+            orderId: widget.orderModel!.id!,
+          );
+        }
       },
       child: Container(
         margin: const EdgeInsets.symmetric(
@@ -196,7 +200,9 @@ class _OrderWidgetState extends State<OrderWidget> {
                           color: _getStatusBgColor(context, widget.orderModel!.orderStatus),
                         ),
                         child: Text(
-                          getTranslated(widget.orderModel!.orderStatus, context) ?? '',
+                          _hasInsuranceAction(widget.orderModel?.commerceFlowStatus)
+                              ? (getTranslated('insurance_action_required', context) ?? '')
+                              : (getTranslated(widget.orderModel!.orderStatus, context) ?? ''),
                           style: textBold.copyWith(
                             fontSize: Dimensions.fontSizeSmall,
                             color: _getStatusTextColor(context, widget.orderModel!.orderStatus),
@@ -273,6 +279,12 @@ class _OrderWidgetState extends State<OrderWidget> {
         return Theme.of(context).colorScheme.secondary.withValues(alpha: .1);
     }
   }
+
+  bool _hasInsuranceAction(String? status) => const {
+    'customer_insurance_pending',
+    'customer_insurance_under_review',
+    'purchase_refund_pending',
+  }.contains(status);
 
   Color _getStatusTextColor(BuildContext context, String? status) {
     switch (status) {

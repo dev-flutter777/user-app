@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sixvalley_ecommerce/common/basewidget/custom_asset_image_widget.dart';
-import 'package:flutter_sixvalley_ecommerce/features/chat/controllers/chat_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/order/domain/models/order_model.dart';
 import 'package:flutter_sixvalley_ecommerce/features/order_details/controllers/order_details_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/tracking/widgets/line_dashed_widget.dart';
@@ -12,7 +11,6 @@ import 'package:flutter_sixvalley_ecommerce/utill/custom_themes.dart';
 import 'package:flutter_sixvalley_ecommerce/utill/dimensions.dart';
 import 'package:flutter_sixvalley_ecommerce/utill/images.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class StatusStepperWidget extends StatelessWidget {
   final String? title;
@@ -100,13 +98,6 @@ class StatusStepperWidget extends StatelessWidget {
           Consumer<OrderDetailsController>(
             builder: (context, orderProvider, child) {
               Orders? orderModel = orderProvider.orders;
-              String? countryCode =  orderModel?.deliveryMan?.countryCode;
-              String? phone =  orderModel?.deliveryMan?.phone;
-              String? phoneWithCountryCode =  (countryCode ?? '') + (phone ?? '');
-              String? name = '${orderModel?.deliveryMan?.fName!} ${orderModel?.deliveryMan?.lName}';
-              int? id =   orderModel?.deliveryMan?.id;
-              String? image =  orderModel?.deliveryMan?.imageFullUrl?.path;
-
               return  orderModel?.deliveryMan != null ? Container(
                 padding: EdgeInsets.all(Dimensions.paddingSizeSmall),
                 decoration: BoxDecoration(
@@ -116,30 +107,9 @@ class StatusStepperWidget extends StatelessWidget {
                 child: Row(
                   children: [
                     InkWell(
-                      onTap: () {
-                        Provider.of<ChatController>(context, listen: false).setUserTypeIndex(context, 0);
-                        RouterHelper.getChatScreenRoute(
-                          action: RouteAction.push,
-                          image: image,
-                          id: id,
-                          name: name,
-                          userType: 0,
-                          isShopTemporaryClosed: false,
-                          isShopOnVacation: false,
-                        );
-                      },
+                      onTap: () => RouterHelper.getSupportTicketRoute(action: RouteAction.push),
                       child: CustomAssetImageWidget(Images.storeChatIcon, height: 20, width: 20)
                     ),
-                    SizedBox(width: Dimensions.paddingSizeSmall),
-
-                    Container(height: 20, width: 1, color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.35) ),
-
-                    SizedBox(width: Dimensions.paddingSizeSmall),
-                    InkWell(
-                      onTap: ()=> _launchUrl("tel:$phoneWithCountryCode"),
-                      child: CustomAssetImageWidget(Images.deliverymanCallIcon, height: 20, width: 20)
-                    ),
-
                   ],
                 ),
               ) : Padding(
@@ -165,11 +135,5 @@ class StatusStepperWidget extends StatelessWidget {
 
       ]),
     );
-  }
-
-  Future<void> _launchUrl(String url) async {
-    if (!await launchUrl(Uri.parse(url))) {
-      throw 'Could not launch $url';
-    }
   }
 }

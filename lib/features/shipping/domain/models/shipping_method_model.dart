@@ -6,6 +6,13 @@ class ShippingMethodModel {
   String? duration;
   String? createdAt;
   String? updatedAt;
+  String? optionKey;
+  String? promiseMode;
+  int? minimumBusinessDays;
+  int? maximumBusinessDays;
+  DateTime? estimatedFrom;
+  DateTime? estimatedTo;
+  String? estimatedLabel;
 
   ShippingMethodModel(
       {this.id,
@@ -14,7 +21,14 @@ class ShippingMethodModel {
         this.cost,
         this.duration,
         this.createdAt,
-        this.updatedAt});
+        this.updatedAt,
+        this.optionKey,
+        this.promiseMode,
+        this.minimumBusinessDays,
+        this.maximumBusinessDays,
+        this.estimatedFrom,
+        this.estimatedTo,
+        this.estimatedLabel});
 
 
 
@@ -33,6 +47,13 @@ class ShippingMethodModel {
     duration = json['duration'];
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
+    optionKey = json['option_key'];
+    promiseMode = json['promise_mode'];
+    minimumBusinessDays = int.tryParse('${json['minimum_business_days'] ?? ''}');
+    maximumBusinessDays = int.tryParse('${json['maximum_business_days'] ?? ''}');
+    estimatedFrom = DateTime.tryParse('${json['estimated_from'] ?? ''}');
+    estimatedTo = DateTime.tryParse('${json['estimated_to'] ?? ''}');
+    estimatedLabel = json['estimated_label'];
   }
 
 }

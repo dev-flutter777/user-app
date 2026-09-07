@@ -26,6 +26,42 @@ class ShippingInfoWidget extends StatelessWidget {
                 style: titilliumRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).textTheme.bodyLarge?.color))]),
             const SizedBox(height: Dimensions.marginSizeExtraSmall),
 
+            if(order!.orders!.shipmentReference != null)
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                Text('${getTranslated('shipment_reference', context) ?? 'Shipment reference'} : ',
+                    style: titilliumRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).textTheme.bodyLarge?.color)),
+                Text(order!.orders!.shipmentReference!,
+                    style: titilliumRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).textTheme.bodyLarge?.color)),
+              ]),
+
+            if(order!.orders!.customerDeliveryConfirmationStatus != null)
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                Text('${getTranslated('receipt_confirmation_status', context) ?? 'Receipt confirmation'} : ',
+                    style: titilliumRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).textTheme.bodyLarge?.color)),
+                Text(getTranslated(order!.orders!.customerDeliveryConfirmationStatus, context) ?? order!.orders!.customerDeliveryConfirmationStatus!,
+                    style: titilliumRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).textTheme.bodyLarge?.color)),
+              ]),
+
+            if (order!.orders!.orderStatus == 'delivered' &&
+                order!.orders!.customerDeliveryConfirmationStatus == 'pending') ...[
+              const SizedBox(height: Dimensions.paddingSizeSmall),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: order!.isConfirmingReceipt
+                      ? null
+                      : () => order!.confirmReceipt(order!.orders!.id!, context),
+                  icon: order!.isConfirmingReceipt
+                      ? const SizedBox.square(
+                          dimension: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.inventory_2_outlined),
+                  label: Text(getTranslated('confirm_receipt', context) ?? ''),
+                ),
+              ),
+            ],
+
 
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                   Text('${getTranslated('tracking_id', context)} : ',

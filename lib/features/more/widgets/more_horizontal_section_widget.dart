@@ -40,9 +40,9 @@ class MoreHorizontalSection extends StatelessWidget {
               },
             ),
 
-            if(!isGuestMode && configModel?.walletStatus == 1)SquareButtonWidget(
+            if(!isGuestMode)SquareButtonWidget(
               image: Images.wallet,
-              title: getTranslated('wallet', context),
+              title: getTranslated('wallet_my_wallet', context),
               navigateTo: null,
               onTap: () {
                 RouterHelper.getWalletRoute(action: RouteAction.push, isBackButtonExist: true);

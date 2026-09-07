@@ -1,13 +1,11 @@
-import 'package:country_code_picker/country_code_picker.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sixvalley_ecommerce/features/address/domain/models/address_model.dart';
-import 'package:flutter_sixvalley_ecommerce/features/auth/widgets/code_picker_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/checkout/controllers/checkout_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/location/controllers/location_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/profile/controllers/profile_contrroller.dart';
-import 'package:flutter_sixvalley_ecommerce/features/splash/domain/models/config_model.dart' as config;
 import 'package:flutter_sixvalley_ecommerce/helper/country_code_helper.dart';
+import 'package:flutter_sixvalley_ecommerce/helper/egypt_location_helper.dart';
 import 'package:flutter_sixvalley_ecommerce/helper/route_healper.dart';
 import 'package:flutter_sixvalley_ecommerce/helper/velidate_check.dart';
 import 'package:flutter_sixvalley_ecommerce/localization/language_constrants.dart';
@@ -15,7 +13,6 @@ import 'package:flutter_sixvalley_ecommerce/main.dart';
 import 'package:flutter_sixvalley_ecommerce/features/auth/controllers/auth_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/address/controllers/address_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/splash/controllers/splash_controller.dart';
-import 'package:flutter_sixvalley_ecommerce/theme/controllers/theme_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/utill/custom_themes.dart';
 import 'package:flutter_sixvalley_ecommerce/utill/dimensions.dart';
 import 'package:flutter_sixvalley_ecommerce/utill/images.dart';
@@ -50,13 +47,15 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
   final FocusNode _nameNode = FocusNode();
   final FocusNode _emailNode = FocusNode();
   final FocusNode _numberNode = FocusNode();
-  final FocusNode _cityNode = FocusNode();
+  String? _selectedGovernorate;
   final FocusNode _zipNode = FocusNode();
   GoogleMapController? _controller;
   CameraPosition? _cameraPosition;
   bool _updateAddress = true;
-  Address? _address;
-  String zip = '',  country = 'IN';
+  static const String _egyptDialCode = '+20';
+  static const String _egyptCountryName = 'Egypt';
+  static const LatLng _egyptCenter = LatLng(26.8206, 30.8025);
+  String zip = '',  country = 'EG';
   late LatLng _defaut;
 
   final GlobalKey<FormState> _addressFormKey = GlobalKey();
@@ -65,17 +64,13 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
   void initState() {
     super.initState();
 
-    config.DefaultLocation? dLocation = Provider.of<SplashController>(context, listen: false).configModel?.defaultLocation;
-    _defaut = LatLng(double.parse(dLocation?.lat ?? '0'), double.parse(dLocation?.lng ?? '0'));
+    _defaut = _egyptCenter;
 
-    if(widget.isBilling!){
-      _address = Address.billing;
-    }else{
-      _address = Address.shipping;
-    }
+    // Billing addresses are not part of this checkout. Every saved address is
+    // a delivery address, so users never need to choose a second type here.
 
-    Provider.of<AuthController>(context, listen: false).setCountryCode(CountryCode.fromCountryCode(Provider.of<SplashController>(context, listen: false).configModel!.countryCode!).dialCode!, notify: false);
-    _countryCodeController.text = CountryCode.fromCountryCode(Provider.of<SplashController>(context, listen: false).configModel!.countryCode!).name??'Bangladesh';
+    Provider.of<AuthController>(context, listen: false).setCountryCode(_egyptDialCode, notify: false);
+    _countryCodeController.text = _egyptCountryName;
     Provider.of<AddressController>(context, listen: false).getAddressType();
     Provider.of<AddressController>(context, listen: false).getRestrictedDeliveryCountryList();
     Provider.of<AddressController>(context, listen: false).getRestrictedDeliveryZipList();
@@ -93,10 +88,14 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
             double.parse(widget.address!.longitude!) : _defaut.longitude,
           )), true, widget.address!.address, context);
       _contactPersonNameController.text = '${widget.address?.contactPersonName}';
-      _countryCodeController.text = '${widget.address?.country}';
+      _countryCodeController.text = _egyptCountryName;
       _contactPersonEmailController.text =  '${widget.address?.email}';
       // _contactPersonNumberController.text = '${widget.address?.phone}';
       _cityController.text = '${widget.address?.city}';
+      final savedGovernorate = widget.address?.state ?? _cityController.text;
+      if (EgyptLocationHelper.governorates.contains(savedGovernorate)) {
+        _selectedGovernorate = savedGovernorate;
+      }
       _zipCodeController.text = '${widget.address?.zip}';
       if (widget.address!.addressType == 'Home') {
         Provider.of<AddressController>(context, listen: false).updateAddressIndex(0, false);
@@ -105,7 +104,7 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
       } else {
         Provider.of<AddressController>(context, listen: false).updateAddressIndex(2, false);
       }
-      String countryCode = CountryCodeHelper.getCountryCode(widget.address?.phone ?? '')!;
+      String countryCode = _egyptDialCode;
       Provider.of<AuthController>(context, listen: false).setCountryCode(countryCode, notify: false);
       String phoneNumberOnly = CountryCodeHelper.extractPhoneNumber(countryCode, widget.address?.phone ?? '');
       _contactPersonNumberController.text = phoneNumberOnly;
@@ -115,7 +114,7 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
         _contactPersonNameController.text = '${Provider.of<ProfileController>(context, listen: false).userInfoModel!.fName ?? ''}'
             ' ${Provider.of<ProfileController>(context, listen: false).userInfoModel!.lName ?? ''}';
 
-        String countryCode = CountryCodeHelper.getCountryCode(Provider.of<ProfileController>(context, listen: false).userInfoModel!.phone ?? '')!;
+        String countryCode = _egyptDialCode;
         Provider.of<AuthController>(context, listen: false).setCountryCode(countryCode);
         String phoneNumberOnly = CountryCodeHelper.extractPhoneNumber(countryCode, Provider.of<ProfileController>(context, listen: false).userInfoModel!.phone ?? '');
         _contactPersonNumberController.text = phoneNumberOnly;
@@ -134,9 +133,6 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
         child: Column(children: [
           Consumer<AddressController>(
             builder: (context, addressController, child) {
-              if ( Provider.of<SplashController>(context , listen: false ). configModel !. deliveryCountryRestriction == 1  && addressController.restrictedCountryList.isNotEmpty ) {
-                _countryCodeController . text = addressController. restrictedCountryList [ 0 ];
-              }
               return Consumer<LocationController>(
                   builder: (context, locationController, _) {
                     return Padding(padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeDefault),
@@ -170,12 +166,8 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
                                   controller: _contactPersonNumberController,
                                   focusNode: _numberNode,
                                   nextFocus: _emailNode,
-                                  showCodePicker: true,
-                                  countryDialCode: authProvider.countryDialCode,
-                                  onCountryChanged: (CountryCode countryCode) {
-                                    authProvider.countryDialCode = countryCode.dialCode!;
-                                    authProvider.setCountryCode(countryCode.dialCode!);
-                                  },
+                                  showCodePicker: false,
+                                  countryDialCode: _egyptDialCode,
                                   isAmount: true,
                                   validator: (value)=> ValidateCheck.validateEmptyText(value, "phone_must_be_required"),
                                   inputAction: TextInputAction.next,
@@ -216,8 +208,9 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
                                               (widget.address!.longitude != null && widget.address!.longitude != '0' && widget.address!.longitude != '') ?
                                               double.parse(widget.address!.longitude!) : _defaut.longitude,
                                             ) :
-                                            LatLng(locationController.position.latitude, locationController.position.longitude),
+                                            _isInsideEgypt(LatLng(locationController.position.latitude, locationController.position.longitude)) ? LatLng(locationController.position.latitude, locationController.position.longitude) : _egyptCenter,
                                             zoom: 16),
+                                        cameraTargetBounds: CameraTargetBounds(LatLngBounds(southwest: const LatLng(21.5, 24.5), northeast: const LatLng(31.8, 37.2))),
                                         onTap: (latLng) {
                                           RouterHelper.getSelectLocationScreen(googleMapController: _controller, action: RouteAction.push);
                                         },
@@ -288,44 +281,6 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
                                                   style: textRegular.copyWith())])))),
                               )),
 
-
-                          Padding(padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeSmall),
-                            child: SizedBox(
-                              height: 50,
-                              child: RadioGroup<Address>(
-                                groupValue: _address,
-                                onChanged: (value) {
-                                  if (value != null) {
-                                    setState(() {
-                                      _address = value;
-                                    });
-                                  }
-                                },
-                                child: Row(children:[
-                                  Row(children: [
-                                    Radio<Address>(value: Address.shipping),
-
-                                    Text(getTranslated('shipping_address', context) ?? '', style: textRegular.copyWith(
-                                      fontSize: Dimensions.fontSizeLarge,
-                                      color: Theme.of(context).textTheme.bodyLarge?.color,
-                                    )),
-                                  ]),
-                                  const SizedBox(width: Dimensions.paddingSizeSmall),
-
-                                  Row(children: [
-                                    Radio<Address>(value: Address.billing),
-
-                                    Text(getTranslated('billing_address', context) ?? '', style: textRegular.copyWith(
-                                      fontSize: Dimensions.fontSizeLarge,
-                                      color: Theme.of(context).textTheme.bodyLarge?.color,
-                                    )),
-                                  ]),
-                                ]),
-                              ),
-                            ),
-                          ),
-
-
                           CustomTextFieldWidget(labelText: getTranslated('delivery_address', context),
                             hintText: getTranslated('usa', context),
                             inputType: TextInputType.streetAddress,
@@ -333,7 +288,7 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
                             focusNode: _addressNode,
                             prefixIcon: Images.address,
                             required: true,
-                            nextFocus: _cityNode,
+                            nextFocus: _zipNode,
                             controller: locationController.locationController,
                             validator: (value)=> ValidateCheck.validateEmptyText(value, "address_is_required"),
 
@@ -354,71 +309,15 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
                                     builder: (context, addressController, _) {
                                       return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
 
-                                        Provider.of<SplashController>(context, listen: false).configModel!.deliveryCountryRestriction == 1?
-
                                         Container(width: MediaQuery.of(context).size.width,
-                                          decoration: BoxDecoration(color: Theme.of(context).cardColor,
-                                              borderRadius: BorderRadius.circular(5),
-                                              border: Border.all(width: .1, color: Theme.of(context).hintColor.withValues(alpha:0.1))),
-                                          child: DropdownButtonFormField2<String>(
-                                            isExpanded: true,
-                                            isDense: true,
-                                            decoration: InputDecoration(contentPadding: const EdgeInsets.symmetric(vertical: 0),
-
-                                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(5))),
-                                            hint:  Row(children: [
+                                          padding: const EdgeInsets.all(Dimensions.paddingSizeDefault),
+                                          decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(5), border: Border.all(width: .1, color: Theme.of(context).hintColor.withValues(alpha:0.1))),
+                                          child: Row(children: [
                                               Image.asset(Images.country),
                                               const SizedBox(width: Dimensions.paddingSizeSmall),
-                                              Text(_countryCodeController.text, style: textRegular.copyWith(fontSize: Dimensions.fontSizeDefault, color: Theme.of(context).textTheme.bodyLarge!.color)),
-                                            ],
-                                            ),
-                                            items: addressController.restrictedCountryList.map((item) => DropdownItem<String>(
-                                                value: item, child: Text(item, style: textRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).textTheme.bodyLarge?.color)))).toList(),
-                                            onChanged: (value) {
-                                              _countryCodeController.text = value!;
-
-                                            },
-
-                                            iconStyleData: IconStyleData(
-                                                icon: Icon(Icons.arrow_drop_down, color: Theme.of(context).hintColor), iconSize: 24),
-                                            dropdownStyleData: DropdownStyleData(
-                                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(5),),),
-                                            menuItemStyleData: const MenuItemStyleData(padding: EdgeInsets.symmetric(horizontal: 16)),
-                                          ),
-                                        ):
-
-                                        Container(width: MediaQuery.of(context).size.width,
-                                          padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeSmall),
-                                          decoration: BoxDecoration(borderRadius: BorderRadius.circular(Dimensions.paddingSizeSmall),
-                                              color: Theme.of(context).cardColor,
-                                              border: Border.all(color: Theme.of(context).hintColor.withValues(alpha:.5))),
-                                          child: CodePickerWidget(
-                                            fromCountryList: true,
-                                            padding: const EdgeInsets.only(left: Dimensions.paddingSizeSmall),
-                                            flagWidth: 25,
-                                            onChanged: (val){
-                                              _countryCodeController.text = val.name!;
-                                            },
-                                            initialSelection: _countryCodeController.text,
-                                            showDropDownButton: true,
-                                            showCountryOnly: true,
-                                            showOnlyCountryWhenClosed: true,
-                                            showFlagDialog: true,
-                                            hideMainText: false,
-                                            showFlagMain: false,
-                                            dialogBackgroundColor: Theme.of(context).cardColor,
-                                            barrierColor: Provider.of<ThemeController>(context).darkTheme ? Colors.black.withValues(alpha:0.4) : null,
-                                            textStyle: textRegular.copyWith(
-                                              fontSize: Dimensions.fontSizeLarge,
-                                              color: Theme.of(context).textTheme.bodyLarge!.color,
-                                            ),
-                                            dialogTextStyle: textRegular.copyWith(
-                                              fontSize: Dimensions.fontSizeDefault,
-                                              color: Theme.of(context).textTheme.bodyLarge!.color,
-                                            ),
-                                          ),
+                                              Text(_egyptCountryName, style: textRegular.copyWith(fontSize: Dimensions.fontSizeDefault, color: Theme.of(context).textTheme.bodyLarge!.color)),
+                                          ]),
                                         ),
-
                                       ]);})),
                           ],
 
@@ -426,17 +325,37 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
 
 
                           const SizedBox(height: Dimensions.paddingSizeDefaultAddress),
+                          DropdownButtonFormField<String>(
+                            initialValue: _selectedGovernorate,
+                            isExpanded: true,
+                            decoration: InputDecoration(
+                              labelText: getTranslated('governorate', context),
+                              border: const OutlineInputBorder(),
+                              prefixIcon: Image.asset(Images.city),
+                            ),
+                            hint: Text(getTranslated('governorate', context) ?? 'Governorate'),
+                            items: EgyptLocationHelper.governorates.map((governorate) => DropdownMenuItem<String>(
+                              value: governorate,
+                              child: Text(governorate, style: textRegular.copyWith(fontSize: Dimensions.fontSizeDefault)),
+                            )).toList(),
+                            validator: (value) => value == null ? getTranslated('governorate_is_required', context) : null,
+                            onChanged: (value) => setState(() {
+                              _selectedGovernorate = value;
+                            }),
+                            icon: Icon(Icons.arrow_drop_down, color: Theme.of(context).hintColor),
+                          ),
+
+                          const SizedBox(height: Dimensions.paddingSizeDefaultAddress),
                           CustomTextFieldWidget(
+                            required: true,
+                            prefixIcon: Images.city,
                             labelText: getTranslated('city', context),
                             hintText: getTranslated('city', context),
-                            inputType: TextInputType.streetAddress,
-                            inputAction: TextInputAction.next,
-                            focusNode: _cityNode,
-                            required: true,
-                            nextFocus: _zipNode,
-                            prefixIcon: Images.city,
+                            inputType: TextInputType.text,
                             controller: _cityController,
-                            validator: (value)=> ValidateCheck.validateEmptyText(value, 'city_is_required'),
+                            focusNode: _zipNode,
+                            inputAction: TextInputAction.next,
+                            validator: (value) => ValidateCheck.validateEmptyText(value, 'city_is_required'),
                           ),
                           const SizedBox(height: Dimensions.paddingSizeDefaultAddress),
 
@@ -447,10 +366,9 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
                             hintText: getTranslated('zip', context),
                             inputAction: TextInputAction.done,
                             focusNode: _zipNode,
-                            required: true,
+                            required: false,
                             prefixIcon: Images.city,
                             controller: _zipCodeController,
-                            validator: (value)=> ValidateCheck.validateEmptyText(value, 'zip_code_is_required'),
                           ) :
                           Container(width: MediaQuery.of(context).size.width,
                             decoration: BoxDecoration(color: Theme.of(context).cardColor,
@@ -490,17 +408,25 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
                               buttonText: widget.isEnableUpdate ? getTranslated('update_address', context) : getTranslated('save_location', context),
                               onTap: locationController.loading ? null : () {
 
+                                if (!_isInsideEgypt(LatLng(locationController.position.latitude, locationController.position.longitude))) {
+                                  showCustomSnackBarWidget(getTranslated('select_address_inside_egypt', context) ?? '', Get.context!, snackBarType: SnackBarType.warning);
+                                  return;
+                                }
+
                                 if(_addressFormKey.currentState?.validate() ?? false) {
                                   AddressModel addressModel = AddressModel(
                                     addressType: addressController.addressTypeList[addressController.selectAddressIndex].title,
                                     contactPersonName: _contactPersonNameController.text,
                                     phone: '${Provider.of<AuthController>(context, listen: false).countryDialCode}${_contactPersonNumberController.text.trim()}',
                                     email: _contactPersonEmailController.text.trim(),
+                                    // The API retains city for backwards compatibility; state
+                                    // carries the explicit governorate used by Egypt shipping.
+                                    state: _selectedGovernorate,
                                     city: _cityController.text,
                                     zip: _zipCodeController.text,
                                     country:  _countryCodeController.text,
                                     guestId: Provider.of<AuthController>(context, listen: false).getGuestToken(),
-                                    isBilling: _address == Address.billing,
+                                    isBilling: false,
                                     address: locationController.locationController.text,
                                     latitude: widget.isEnableUpdate ? locationController.position.latitude.toString() : locationController.position.latitude.toString(),
                                     longitude: widget.isEnableUpdate ? locationController.position.longitude.toString() : locationController.position.longitude.toString(),
@@ -546,6 +472,8 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
       ),
     );
   }
+
+  static bool _isInsideEgypt(LatLng point) => point.latitude >= 21.5 && point.latitude <= 31.8 && point.longitude >= 24.5 && point.longitude <= 37.2;
   void _checkPermission(Function callback, BuildContext context) async {
     LocationPermission permission = await Geolocator.requestPermission();
     if(permission == LocationPermission.denied || permission == LocationPermission.whileInUse) {

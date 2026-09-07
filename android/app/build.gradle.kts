@@ -11,6 +11,9 @@ plugins {
 
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
+val mapsApiKey = providers.gradleProperty("MAPS_API_KEY")
+    .orElse(System.getenv("MAPS_API_KEY") ?: "")
+    .get()
 
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
@@ -40,6 +43,7 @@ android {
         targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
     }
     signingConfigs {
         create("release") {

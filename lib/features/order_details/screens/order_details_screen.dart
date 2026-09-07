@@ -14,6 +14,7 @@ import 'package:flutter_sixvalley_ecommerce/features/order_details/widgets/order
 import 'package:flutter_sixvalley_ecommerce/features/order_details/widgets/order_details_status_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/order_details/widgets/order_payment_bottomsheet_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/order_details/widgets/order_payment_info_widget.dart';
+import 'package:flutter_sixvalley_ecommerce/features/order_details/widgets/post_payment_refund_card.dart';
 import 'package:flutter_sixvalley_ecommerce/features/order_details/widgets/ordered_product_list_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/order_details/widgets/seller_section_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/order_details/widgets/shipping_and_billing_widget.dart';
@@ -168,6 +169,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                         child: ListView(padding: const EdgeInsets.all(0), children: [
                           const SizedBox(height: Dimensions.paddingSizeDefault),
                           const OrderPaymentInfoWidget(),
+                          PostPaymentRefundCard(order: orderProvider.orders),
 
                             Container(
                               height: Dimensions.fontSizeSmall,
@@ -613,7 +615,9 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                               ),
                               SizedBox(height: Dimensions.paddingSizeSmall),
                             ],
-                          ) : orderProvider.orders!.deliveryServiceName != null ?
+                            ) : (orderProvider.orders!.deliveryServiceName != null ||
+                              orderProvider.orders!.shipmentReference != null ||
+                              orderProvider.orders!.customerDeliveryConfirmationStatus != null) ?
                           ShippingInfoWidget(order: orderProvider) : const SizedBox(),
 
                           if(orderProvider.orderDetails != null && orderProvider.orderDetails!.isNotEmpty &&

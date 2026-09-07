@@ -14,6 +14,16 @@ class ShippingService implements ShippingServiceInterface{
     return await shippingRepositoryInterface.getChosenShippingMethod();
   }
 
+  @override
+  Future quoteForAddress(int addressId) async {
+    return await shippingRepositoryInterface.quoteForAddress(addressId);
+  }
+
+  @override
+  Future selectQuoteForAddress(int addressId, String option) async {
+    return await shippingRepositoryInterface.selectQuoteForAddress(addressId, option);
+  }
+
 
   @override
   Future getShippingMethod(int? sellerId, String? type) async {

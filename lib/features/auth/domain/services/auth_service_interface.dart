@@ -4,6 +4,8 @@ abstract class AuthServiceInterface{
 
   Future<dynamic> registration(Map<String, dynamic> body, );
 
+  Future<dynamic> getRegistrationPolicies();
+
   Future<dynamic> login(String? userInput, String? password, String? type);
 
   Future<dynamic> logout();

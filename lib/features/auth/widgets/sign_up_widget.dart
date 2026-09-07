@@ -1,12 +1,11 @@
-import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sixvalley_ecommerce/features/auth/domain/models/register_model.dart';
 import 'package:flutter_sixvalley_ecommerce/features/auth/widgets/condition_check_box_widget.dart';
 import 'package:flutter_sixvalley_ecommerce/features/profile/controllers/profile_contrroller.dart';
+import 'package:flutter_sixvalley_ecommerce/features/splash/controllers/splash_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/helper/velidate_check.dart';
 import 'package:flutter_sixvalley_ecommerce/localization/language_constrants.dart';
 import 'package:flutter_sixvalley_ecommerce/features/auth/controllers/auth_controller.dart';
-import 'package:flutter_sixvalley_ecommerce/features/splash/controllers/splash_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/utill/custom_themes.dart';
 import 'package:flutter_sixvalley_ecommerce/utill/dimensions.dart';
 import 'package:flutter_sixvalley_ecommerce/utill/images.dart';
@@ -45,8 +44,6 @@ class SignUpWidgetState extends State<SignUpWidget> {
 
   RegisterModel register = RegisterModel();
   final GlobalKey<FormState> signUpFormKey = GlobalKey<FormState>();
-
-
 
   Future<void> route(bool isRoute, String? token, String? tempToken, String? errorMessage) async {
     var splashController = Provider.of<SplashController>(context,listen: false);
@@ -94,7 +91,10 @@ class SignUpWidgetState extends State<SignUpWidget> {
   @override
   void initState() {
     super.initState();
-    Provider.of<AuthController>(context, listen: false).setCountryCode(CountryCode.fromCountryCode(Provider.of<SplashController>(context, listen: false).configModel!.countryCode!).dialCode!, notify: false);
+    Provider.of<AuthController>(context, listen: false).setCountryCode('+20', notify: false);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<AuthController>(context, listen: false).loadRegistrationPolicies();
+    });
 
     if(widget.referCode != null) {
       _referController.text = widget.referCode ?? '';
@@ -169,13 +169,8 @@ class SignUpWidgetState extends State<SignUpWidget> {
                           focusNode: _phoneFocus,
                           nextFocus: _passwordFocus,
                           required: true,
-                          showCodePicker: true,
-                          countryDialCode: authProvider.countryDialCode,
-                          onCountryChanged: (CountryCode countryCode) {
-                            _phoneFocus.requestFocus();
-                            authProvider.countryDialCode = countryCode.dialCode!;
-                            authProvider.setCountryCode(countryCode.dialCode!);
-                          },
+                          showCodePicker: false,
+                          countryDialCode: '+20',
                           isAmount: true,
                           validator: (value)=> ValidateCheck.validatePhoneNoText(value, authProvider.countryDialCode, "phone_must_be_required"),
                           inputAction: TextInputAction.next,
@@ -234,11 +229,23 @@ class SignUpWidgetState extends State<SignUpWidget> {
                       const SizedBox(height: Dimensions.paddingSizeDefault),
                       const ConditionCheckBox(),
 
+                      if(authProvider.requiredRegistrationPolicies.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeDefault),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: authProvider.requiredRegistrationPolicies.map((policy) => Padding(
+                              padding: const EdgeInsets.only(top: Dimensions.paddingSizeSmall),
+                              child: Text('• ${policy['title'] ?? ''} (v${policy['version'] ?? ''})'),
+                            )).toList(),
+                          ),
+                        ),
+
                       Container(margin: const EdgeInsets.all(Dimensions.paddingSizeDefault), child: Hero(
                         tag: 'onTap',
                         child: CustomButton(
                           isLoading: authProvider.isLoading,
-                          onTap: (authProvider.isAcceptTerms && authProvider.isAcceptPrivacy) ?  () {
+                          onTap: (authProvider.isAcceptTerms && authProvider.isAcceptPrivacy && authProvider.registrationPoliciesLoaded) ?  () {
                             String firstName = _firstNameController.text.trim();
                             String lastName = _lastNameController.text.trim();
                             String email = _emailController.text.trim();
@@ -254,6 +261,10 @@ class SignUpWidgetState extends State<SignUpWidget> {
                               register.referCode = _referController.text.trim();
                               register.termsAccepted = 1;
                               register.privacyAccepted = 1;
+                              register.policyVersionIds = authProvider.requiredRegistrationPolicies
+                                  .map((policy) => int.tryParse(policy['id'].toString()) ?? 0)
+                                  .where((id) => id > 0)
+                                  .toList();
                               authProvider.registration(register, route, config!, widget.fromPage, widget.onLoginSuccess);
                             }
 

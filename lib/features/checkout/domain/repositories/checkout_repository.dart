@@ -1,5 +1,4 @@
 
-import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_sixvalley_ecommerce/data/datasource/remote/dio/dio_client.dart';
@@ -55,21 +54,6 @@ class CheckoutRepository implements CheckoutRepositoryInterface{
   }
 
  @override
-Future<dynamic> getActivationInvoice() async {
-  try {
-    // التعديل هنا: استخدمنا dioClient بدل apiClient
-    final response = await dioClient!.get(AppConstants.activationInvoiceUri);
-  
-    if (response.statusCode == 200) {
-      return response;
-    }
-    return null;
-  } catch (e) {
-    return null;
-  }
-}
-
- @override
   Future<ApiResponseModel> offlinePaymentPlaceOrder(String? addressID, String? couponCode, String? couponDiscountAmount, String? billingAddressId, String? orderNote, List <String?> typeKey, List<String> typeValue, int? id, String name, String? paymentNote, bool? isCheckCreateAccount, String? password, String? imagePath) async {
     try {
       int isCheckAccount = isCheckCreateAccount! ? 1: 0;
@@ -117,9 +101,11 @@ Future<dynamic> getActivationInvoice() async {
 
   @override
   Future<ApiResponseModel> walletPaymentPlaceOrder(String? addressID, String? couponCode,String? couponDiscountAmount, String? billingAddressId, String? orderNote, bool? isCheckCreateAccount, String? password) async {
-    int isCheckAccount = isCheckCreateAccount! ? 1: 0;
     try {
-      final response = await dioClient!.get('${AppConstants.walletPayment}?address_id=$addressID&coupon_code=$couponCode&coupon_discount=$couponDiscountAmount&billing_address_id=$billingAddressId&order_note=$orderNote&guest_id=${Provider.of<AuthController>(Get.context!, listen: false).getGuestToken()}&is_guest=${Provider.of<AuthController>(Get.context!, listen: false).isLoggedIn()? 0 :1}&is_check_create_account=$isCheckAccount&password=$password',);
+      final response = await dioClient!.get(AppConstants.walletPayment, queryParameters: {
+        'address_id': addressID, 'coupon_code': couponCode, 'coupon_discount': couponDiscountAmount,
+        'billing_address_id': billingAddressId, 'order_note': orderNote, 'is_guest': 0,
+      });
       return ApiResponseModel.withSuccess(response);
     } catch (e) {
       return ApiResponseModel.withError(ApiErrorHandler.getMessage(e));
@@ -189,15 +175,14 @@ Future<dynamic> getActivationInvoice() async {
   }
 
   @override
-Future<dynamic> submitInvoicePayment(String endpoint, Map<String, dynamic> data) async {
-  try {
-    final response = await dioClient!.post(endpoint, data: data);
-    return response;
-  } catch (e) {
-    return null;
+  Future<ApiResponseModel> getOrderInsuranceQuote(String? couponCode) async {
+    try {
+      final response = await dioClient!.get(AppConstants.orderInsuranceQuote, queryParameters: {'coupon_code': couponCode ?? ''});
+      return ApiResponseModel.withSuccess(response);
+    } catch (e) {
+      return ApiResponseModel.withError(ApiErrorHandler.getMessage(e));
+    }
   }
-}
-
 
   @override
   Future add(value) {

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sixvalley_ecommerce/features/address/controllers/address_controller.dart';
 import 'package:flutter_sixvalley_ecommerce/features/address/widgets/address_shimmer.dart';
 import 'package:flutter_sixvalley_ecommerce/features/checkout/controllers/checkout_controller.dart';
+import 'package:flutter_sixvalley_ecommerce/features/shipping/controllers/shipping_controller.dart';
+import 'package:flutter_sixvalley_ecommerce/helper/price_converter.dart';
 import 'package:flutter_sixvalley_ecommerce/helper/route_healper.dart';
 import 'package:flutter_sixvalley_ecommerce/localization/language_constrants.dart';
 import 'package:flutter_sixvalley_ecommerce/utill/dimensions.dart';
@@ -46,7 +48,56 @@ class _SavedAddressListScreenState extends State<SavedAddressListScreen> {
                 itemCount: locationProvider.addressList?.length,
                 shrinkWrap: true,
                 itemBuilder: (context, index) {
-                  return InkWell(onTap: () {Provider.of<CheckoutController>(context, listen: false).setAddressIndex(index);
+                  return InkWell(onTap: () async {
+                    final addressId = locationProvider.addressList![index].id;
+                    if (addressId == null || !await Provider.of<ShippingController>(context, listen: false).quoteForAddress(context, addressId)) {
+                      return;
+                    }
+                    if (!context.mounted) return;
+                    final selectedOption = await showModalBottomSheet<String>(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (sheetContext) => Consumer<ShippingController>(
+                        builder: (context, shippingController, _) => SafeArea(
+                          child: Padding(
+                            padding: const EdgeInsets.all(Dimensions.paddingSizeDefault),
+                            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              Text('اختر طريقة الشحن', style: Theme.of(context).textTheme.titleLarge),
+                              const SizedBox(height: Dimensions.paddingSizeSmall),
+                              const Text('تم حساب السعر من موقع العنوان الذي اخترته.'),
+                              const SizedBox(height: Dimensions.paddingSizeDefault),
+                              ...shippingController.quotedOptions.map((option) {
+                                final key = '${option['key']}';
+                                final isSigma = key == 'sigma';
+                                final price = double.tryParse('${option['shipping_cost']}') ?? 0;
+                                final minDays = option['minimum_business_days'] ?? '';
+                                final maxDays = option['maximum_business_days'] ?? '';
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeSmall),
+                                  child: OutlinedButton(
+                                    onPressed: shippingController.isLoading ? null : () async {
+                                      if (await shippingController.selectQuoteForAddress(context, addressId, key) && sheetContext.mounted) {
+                                        Navigator.pop(sheetContext, key);
+                                      }
+                                    },
+                                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.all(Dimensions.paddingSizeDefault), alignment: Alignment.centerRight),
+                                    child: Row(children: [
+                                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                        Text(isSigma ? 'شحن سيجما' : 'شحن عادي', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                        Text('مدة التوصيل: $minDays - $maxDays يوم عمل'),
+                                      ])),
+                                      Text(PriceConverter.convertPrice(context, price), style: const TextStyle(fontWeight: FontWeight.bold)),
+                                    ]),
+                                  ),
+                                );
+                              }),
+                            ]),
+                          ),
+                        ),
+                      ),
+                    );
+                    if (selectedOption == null || !context.mounted) return;
+                    Provider.of<CheckoutController>(context, listen: false).setAddressIndex(index);
                     Navigator.pop(context);
                     },
                     child: Padding(padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeDefault),

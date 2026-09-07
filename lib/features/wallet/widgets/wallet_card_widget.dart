@@ -24,7 +24,7 @@ class WalletCardWidget extends StatelessWidget {
         Expanded(flex: 8,
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center, children: [
-              Text(getTranslated('wallet_amount', context)!,
+              Text(getTranslated('purchase_wallet', context)!,
                   style:  textRegular.copyWith(color: Colors.white, fontSize: Dimensions.fontSizeLarge)),
               const SizedBox(height: Dimensions.paddingSizeSmall),
               Row(children: [
