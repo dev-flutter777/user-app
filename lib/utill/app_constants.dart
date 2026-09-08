@@ -3,8 +3,8 @@ import 'package:flutter_sixvalley_ecommerce/common/enums/local_caches_type_enum.
   import 'package:flutter_sixvalley_ecommerce/utill/images.dart';
 
   class AppConstants {
-  static const String appName = '6valley';
-  static const String slogan = 'E-Commerce Marketplace';
+  static const String appName = 'Sigma';
+  static const String slogan = 'Sigma Medical Supplies';
   static const String appVersion = '16.2.1'; ///Flutter SDK 3.41.9
   static const bool demo = false;
 
@@ -16,7 +16,7 @@ import 'package:flutter_sixvalley_ecommerce/common/enums/local_caches_type_enum.
   /// The default targets the host machine from the Android emulator.
   static const String baseUrl = String.fromEnvironment(
     'BASE_URL',
-    defaultValue: 'http://10.0.2.2/ba/public',
+    defaultValue: 'http://192.168.1.8/ba/public',
   );
 
   static const String googleServerClientId = 'client_id here';
