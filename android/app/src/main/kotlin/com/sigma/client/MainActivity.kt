@@ -1,4 +1,4 @@
-package com.sixamtech.sixvalley
+package com.sigma.client
 
 import io.flutter.embedding.android.FlutterActivity
 
